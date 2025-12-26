@@ -83,6 +83,15 @@ const TasksView: React.FC = () => {
     });
   };
 
+  // Helper de Status de Conclusão Dinâmico
+  const getTaskStatus = (task: Task) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (task.recurrence && task.recurrence.type !== 'once') {
+      return task.lastCompletedDate === todayStr;
+    }
+    return task.completed;
+  };
+
   const filteredTasks = useMemo(() => {
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -98,8 +107,8 @@ const TasksView: React.FC = () => {
         }
         if (task.recurrence.type === 'weekly' && task.recurrence.days) {
           // Verifica se a data alvo é maior ou igual a data de criação/início
-          // E se o dia da semana coincide
-          return targetDate >= taskDate && task.recurrence.days.includes(targetDate.getDay());
+          if (targetDate < taskDate) return false;
+          return task.recurrence.days.includes(targetDate.getDay());
         }
         return false;
       };
@@ -120,8 +129,12 @@ const TasksView: React.FC = () => {
       
       return true; // All shows everything
     }).sort((a, b) => {
-        // Ordenação personalizada: Completas por último, depois por prioridade
-        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        const isADone = getTaskStatus(a);
+        const isBDone = getTaskStatus(b);
+        
+        // Completas por último
+        if (isADone !== isBDone) return isADone ? 1 : -1;
+        
         const prio = { high: 0, medium: 1, low: 2 };
         return prio[a.priority] - prio[b.priority];
     });
@@ -143,17 +156,17 @@ const TasksView: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 border-b border-uwjota-border pb-6">
+      <div className="flex flex-row justify-between items-start gap-4 border-b border-uwjota-border pb-6">
         <div>
-          <h1 className="text-3xl font-thin tracking-wider text-uwjota-text uppercase">Operações</h1>
-          <div className="flex space-x-4 mt-4">
+          <h1 className="text-3xl font-light tracking-wide text-uwjota-text uppercase">Operações</h1>
+          <div className="flex space-x-6 mt-4">
             {(['today', 'week', 'all'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`text-xs uppercase tracking-widest pb-1 transition-all ${
+                className={`text-xs font-medium uppercase tracking-wider pb-1 transition-all ${
                   filter === f 
-                    ? 'text-uwjota-gold border-b border-uwjota-gold' 
+                    ? 'text-uwjota-primary border-b-2 border-uwjota-primary' 
                     : 'text-uwjota-muted hover:text-white'
                 }`}
               >
@@ -163,62 +176,65 @@ const TasksView: React.FC = () => {
           </div>
         </div>
         <Button onClick={() => handleOpenModal()} variant="primary">
-          <Plus size={16} className="mr-2" /> Inicializar
+          <Plus size={16} className="mr-2" /> <span className="hidden sm:inline">Inicializar</span><span className="sm:hidden">Novo</span>
         </Button>
       </div>
 
-      <div className="grid gap-1">
+      <div className="grid gap-2">
         {filteredTasks.length === 0 ? (
-          <Card className="text-center py-20 border-dashed border-uwjota-border/30">
-            <h3 className="text-lg font-light text-uwjota-text tracking-wide">Nenhuma operação listada</h3>
+          <Card className="text-center py-20 border-dashed border-uwjota-border/50 bg-transparent shadow-none">
+            <h3 className="text-lg font-medium text-uwjota-text tracking-wide">Nenhuma operação listada</h3>
             <p className="text-uwjota-muted mt-2 text-sm">Sistema ocioso para este período.</p>
           </Card>
         ) : (
-          filteredTasks.map(task => (
-            <div 
-              key={task.id} 
-              className={`group flex items-center p-6 bg-uwjota-card border-b border-uwjota-border/50 hover:bg-[#1a1a1a] transition-all ${
-                task.completed ? 'opacity-40 grayscale' : ''
-              }`}
-            >
-              <button 
-                onClick={() => toggleTaskCompletion(task.id)}
-                className={`flex-shrink-0 mr-6 transition-colors ${
-                  task.completed ? 'text-uwjota-gold' : 'text-uwjota-border hover:text-uwjota-gold'
+          filteredTasks.map(task => {
+            const isCompleted = getTaskStatus(task);
+            return (
+              <div 
+                key={task.id} 
+                className={`group flex items-center p-5 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/30 transition-all ${
+                  isCompleted ? 'opacity-50' : ''
                 }`}
               >
-                {task.completed ? <CheckCircle2 size={20} /> : <Circle size={20} />}
-              </button>
-              
-              <div className="flex-grow min-w-0">
-                <div className="flex items-center gap-3 mb-1">
-                  <h4 className={`text-sm font-medium tracking-wide truncate ${task.completed ? 'line-through' : 'text-uwjota-text'}`}>
-                    {task.title}
-                  </h4>
-                  <Badge color={task.priority === 'high' ? 'red' : 'yellow'}>
-                    {priorityLabels[task.priority]}
-                  </Badge>
-                  {task.recurrence?.type === 'weekly' && (
-                    <Badge color="blue">
-                       <Repeat size={10} className="mr-1" /> Recorrente
+                <button 
+                  onClick={() => toggleTaskCompletion(task.id)}
+                  className={`flex-shrink-0 mr-5 transition-colors ${
+                    isCompleted ? 'text-uwjota-primary' : 'text-uwjota-muted hover:text-uwjota-primary'
+                  }`}
+                >
+                  {isCompleted ? <CheckCircle2 size={22} /> : <Circle size={22} />}
+                </button>
+                
+                <div className="flex-grow min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className={`text-sm font-medium tracking-wide truncate ${isCompleted ? 'line-through' : 'text-uwjota-text'}`}>
+                      {task.title}
+                    </h4>
+                    <Badge color={task.priority === 'high' ? 'red' : 'yellow'}>
+                      {priorityLabels[task.priority]}
                     </Badge>
+                    {task.recurrence?.type === 'weekly' && (
+                      <Badge color="blue">
+                         <Repeat size={10} className="mr-1" /> Recorrente
+                      </Badge>
+                    )}
+                  </div>
+                  {task.description && (
+                    <p className="text-xs text-uwjota-muted truncate">{task.description}</p>
                   )}
                 </div>
-                {task.description && (
-                  <p className="text-xs text-uwjota-muted truncate">{task.description}</p>
-                )}
-              </div>
 
-              <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
-                <button onClick={() => handleOpenModal(task)} className="p-2 text-uwjota-muted hover:text-white">
-                  <Edit2 size={14} />
-                </button>
-                <button onClick={() => deleteTask(task.id)} className="p-2 text-uwjota-muted hover:text-uwjota-error">
-                  <Trash2 size={14} />
-                </button>
+                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
+                  <button onClick={() => handleOpenModal(task)} className="p-2 text-uwjota-muted hover:text-white rounded-md hover:bg-white/5">
+                    <Edit2 size={16} />
+                  </button>
+                  <button onClick={() => deleteTask(task.id)} className="p-2 text-uwjota-muted hover:text-uwjota-error rounded-md hover:bg-uwjota-error/10">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -257,14 +273,14 @@ const TasksView: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-xs uppercase tracking-widest text-uwjota-muted mb-2">Repetição</label>
-            <div className="flex space-x-4 mb-4">
+            <label className="block text-xs font-medium text-uwjota-muted mb-2">Repetição</label>
+            <div className="flex space-x-3 mb-4">
                <button
                  type="button"
                  onClick={() => setFormData({...formData, recurrenceType: 'once'})}
-                 className={`flex-1 py-2 text-xs uppercase tracking-wider rounded border transition-all ${
+                 className={`flex-1 py-2 text-xs uppercase tracking-wider rounded-md border transition-all ${
                    formData.recurrenceType === 'once' 
-                    ? 'bg-uwjota-gold/10 border-uwjota-gold text-uwjota-gold' 
+                    ? 'bg-uwjota-primary/10 border-uwjota-primary text-uwjota-primary' 
                     : 'border-uwjota-border text-uwjota-muted hover:border-uwjota-muted/80'
                  }`}
                >
@@ -273,9 +289,9 @@ const TasksView: React.FC = () => {
                <button
                  type="button"
                  onClick={() => setFormData({...formData, recurrenceType: 'weekly'})}
-                 className={`flex-1 py-2 text-xs uppercase tracking-wider rounded border transition-all ${
+                 className={`flex-1 py-2 text-xs uppercase tracking-wider rounded-md border transition-all ${
                    formData.recurrenceType === 'weekly' 
-                    ? 'bg-uwjota-gold/10 border-uwjota-gold text-uwjota-gold' 
+                    ? 'bg-uwjota-primary/10 border-uwjota-primary text-uwjota-primary' 
                     : 'border-uwjota-border text-uwjota-muted hover:border-uwjota-muted/80'
                  }`}
                >
@@ -284,8 +300,8 @@ const TasksView: React.FC = () => {
             </div>
 
             {formData.recurrenceType === 'weekly' && (
-              <div className="animate-fade-in bg-[#111] p-4 rounded border border-uwjota-border/50">
-                <p className="text-[10px] text-uwjota-muted uppercase mb-3">Selecione os dias</p>
+              <div className="animate-fade-in bg-uwjota-card/50 p-4 rounded-lg border border-uwjota-border">
+                <p className="text-[10px] text-uwjota-muted uppercase mb-3 font-semibold">Selecione os dias</p>
                 <div className="flex justify-between">
                   {weekDays.map((day, index) => {
                     const isSelected = formData.recurrenceDays.includes(index);
@@ -294,10 +310,10 @@ const TasksView: React.FC = () => {
                         key={index}
                         type="button"
                         onClick={() => toggleDay(index)}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-200 ${
                           isSelected
-                            ? 'bg-uwjota-gold text-black shadow-[0_0_10px_rgba(200,169,81,0.3)]'
-                            : 'bg-uwjota-card border border-uwjota-border text-uwjota-muted hover:border-uwjota-gold/50'
+                            ? 'bg-uwjota-primary text-white shadow-lg shadow-uwjota-primary/20'
+                            : 'bg-uwjota-card border border-uwjota-border text-uwjota-muted hover:border-uwjota-primary/50'
                         }`}
                       >
                         {day}
@@ -310,16 +326,16 @@ const TasksView: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-xs uppercase tracking-widest text-uwjota-muted mb-2">Resumo (Opcional)</label>
+            <label className="block text-xs font-medium text-uwjota-muted mb-2">Resumo (Opcional)</label>
             <textarea
-              className="w-full rounded-md border border-uwjota-border bg-[#0f0f0f] text-uwjota-text placeholder-uwjota-muted/50 focus:border-uwjota-gold focus:ring-1 focus:ring-uwjota-gold outline-none px-4 py-3 text-sm"
+              className="w-full rounded-lg border border-uwjota-border bg-uwjota-card/50 text-uwjota-text placeholder-uwjota-muted/40 focus:border-uwjota-primary focus:bg-uwjota-card focus:ring-1 focus:ring-uwjota-primary outline-none px-4 py-2.5 text-sm"
               rows={3}
               value={formData.description}
               onChange={e => setFormData({...formData, description: e.target.value})}
             />
           </div>
 
-          <div className="flex justify-end space-x-3 mt-6 border-t border-uwjota-border pt-4">
+          <div className="flex justify-end space-x-3 mt-6 border-t border-white/5 pt-4">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
             <Button type="submit">Confirmar</Button>
           </div>

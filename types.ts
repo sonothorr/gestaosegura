@@ -1,6 +1,6 @@
 export type Priority = 'low' | 'medium' | 'high';
 export type TransactionType = 'income' | 'expense';
-export type ViewMode = 'dashboard' | 'tasks' | 'finance' | 'settings';
+export type ViewMode = 'dashboard' | 'tasks' | 'finance' | 'settings' | 'notes';
 
 export interface Recurrence {
   type: 'once' | 'weekly';
@@ -15,6 +15,7 @@ export interface Task {
   recurrence?: Recurrence;
   priority: Priority;
   completed: boolean;
+  lastCompletedDate?: string; // Controle para resetar tarefas recorrentes
   createdAt: number;
 }
 
@@ -28,9 +29,18 @@ export interface Transaction {
   createdAt: number;
 }
 
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  isPinned: boolean;
+  updatedAt: number;
+}
+
 export interface AppState {
   tasks: Task[];
   transactions: Transaction[];
+  notes: Note[];
   theme: 'light' | 'dark';
 }
 
@@ -44,6 +54,10 @@ export interface AppContextType extends AppState {
   // Finance Actions
   addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => void;
   deleteTransaction: (id: string) => void;
+  // Note Actions
+  addNote: (note: Omit<Note, 'id' | 'updatedAt'>) => void;
+  updateNote: (id: string, updates: Partial<Note>) => void;
+  deleteNote: (id: string) => void;
   // System Actions
   resetData: () => void;
   importData: (jsonData: string) => boolean;

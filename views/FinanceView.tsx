@@ -10,10 +10,11 @@ const FinanceView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Form helper
+  // Category default to 'Geral' as requested to hide classification
   const [formData, setFormData] = useState({
     type: 'expense' as TransactionType,
     value: '',
-    category: '',
+    category: 'Geral',
     date: new Date().toISOString().split('T')[0],
     note: '',
   });
@@ -30,7 +31,7 @@ const FinanceView: React.FC = () => {
     setFormData({
       type: 'expense',
       value: '',
-      category: '',
+      category: 'Geral',
       date: new Date().toISOString().split('T')[0],
       note: '',
     });
@@ -71,63 +72,57 @@ const FinanceView: React.FC = () => {
     return Array.from(map.values());
   }, [transactions]);
 
-  // Categories for select
-  const categories = formData.type === 'income' 
-    ? ['Salário', 'Freelance', 'Ativos', 'Investimento', 'Outros']
-    : ['Estilo de Vida', 'Transporte', 'Habitação', 'Utilidades', 'Lazer', 'Saúde', 'Luxo', 'Outros'];
-
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center border-b border-uwjota-border pb-6">
-        <h1 className="text-3xl font-thin tracking-wider text-uwjota-text uppercase">Financeiro</h1>
+        <h1 className="text-3xl font-light tracking-wide text-uwjota-text uppercase">Financeiro</h1>
         <Button onClick={() => setIsModalOpen(true)}>
-          <Plus size={16} className="mr-2" /> Registrar Entrada
+          <Plus size={16} className="mr-2" /> Registrar
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-uwjota-card">
-           <p className="text-uwjota-success text-xs uppercase tracking-widest font-medium">Entradas</p>
-           <h3 className="text-3xl font-light text-uwjota-text mt-2">{formatBRL(stats.totalIncome)}</h3>
+           <p className="text-uwjota-muted text-xs uppercase tracking-widest font-medium">Entradas</p>
+           <h3 className="text-3xl font-light text-emerald-400 mt-2">{formatBRL(stats.totalIncome)}</h3>
         </Card>
         <Card className="bg-uwjota-card">
-           <p className="text-uwjota-error text-xs uppercase tracking-widest font-medium">Saídas</p>
-           <h3 className="text-3xl font-light text-uwjota-text mt-2">{formatBRL(stats.totalExpense)}</h3>
+           <p className="text-uwjota-muted text-xs uppercase tracking-widest font-medium">Saídas</p>
+           <h3 className="text-3xl font-light text-rose-400 mt-2">{formatBRL(stats.totalExpense)}</h3>
         </Card>
-        <Card className="border-uwjota-gold/50 bg-[#121212]">
-           <p className="text-uwjota-gold text-xs uppercase tracking-widest font-medium">Posição Líquida</p>
-           <h3 className={`text-3xl font-light mt-2 ${stats.balance >= 0 ? 'text-uwjota-gold' : 'text-uwjota-error'}`}>
+        <Card className="border-uwjota-border bg-[#18181b]">
+           <p className="text-uwjota-muted text-xs uppercase tracking-widest font-medium">Total</p>
+           <h3 className={`text-3xl font-medium mt-2 ${stats.balance >= 0 ? 'text-white' : 'text-uwjota-error'}`}>
              {formatBRL(stats.balance)}
            </h3>
         </Card>
       </div>
 
-      <Card title="Movimentação de Ativos">
+      <Card title="Movimentação">
         <div className="h-72 w-full pt-4">
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2ECC71" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#2ECC71" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#E74C3C" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#E74C3C" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="date" tickFormatter={d => new Date(d).toLocaleDateString('pt-BR', {month:'numeric', day:'numeric'})} stroke="#333" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis stroke="#333" fontSize={10} tickLine={false} axisLine={false} tickFormatter={v => `${v}`} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#161616', border: '1px solid #333', borderRadius: '0px', color: '#EAEAEA' }}
+                  contentStyle={{ backgroundColor: '#18181b', border: '1px solid #333', borderRadius: '8px', color: '#fafafa' }}
                   formatter={(value: number, name: string) => [formatBRL(value), name === 'income' ? 'Receita' : 'Despesa']}
                   labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR')}
                 />
                 <CartesianGrid vertical={false} stroke="#333" strokeOpacity={0.1} strokeDasharray="3 3" />
-                {/* Changed type to "basis" for wave effect and increased strokeWidth */}
-                <Area type="basis" dataKey="income" stroke="#2ECC71" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
-                <Area type="basis" dataKey="expense" stroke="#E74C3C" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
+                <Area type="basis" dataKey="income" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+                <Area type="basis" dataKey="expense" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
@@ -138,43 +133,46 @@ const FinanceView: React.FC = () => {
 
       <div className="space-y-4">
         <h3 className="text-sm font-medium uppercase tracking-widest text-uwjota-muted">Lançamentos</h3>
-        <div className="bg-uwjota-card rounded-lg border border-uwjota-border overflow-hidden">
+        
+        {/* Table Container with Scroll - ADDED overflow-x-auto for mobile */}
+        <div className="bg-uwjota-card rounded-xl border border-uwjota-border overflow-hidden flex flex-col max-h-96">
           {transactions.length === 0 ? (
             <div className="p-12 text-center text-uwjota-muted">Nenhum registro encontrado.</div>
           ) : (
-            <table className="min-w-full divide-y divide-uwjota-border">
-              <thead className="bg-[#0f0f0f]">
-                <tr>
-                  <th className="px-6 py-4 text-left text-[10px] font-medium text-uwjota-muted uppercase tracking-widest">Data</th>
-                  <th className="px-6 py-4 text-left text-[10px] font-medium text-uwjota-muted uppercase tracking-widest">Descrição</th>
-                  <th className="px-6 py-4 text-right text-[10px] font-medium text-uwjota-muted uppercase tracking-widest">Valor</th>
-                  <th className="px-6 py-4 text-right text-[10px] font-medium text-uwjota-muted uppercase tracking-widest"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-uwjota-border">
-                {[...transactions].sort((a,b) => b.createdAt - a.createdAt).map(t => (
-                  <tr key={t.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-xs text-uwjota-muted font-mono">
-                      {new Date(t.date).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-uwjota-text">
-                      <div className="flex items-center">
-                        <span className="font-medium mr-2">{t.category}</span>
-                        {t.note && <span className="text-xs text-uwjota-muted">- {t.note}</span>}
-                      </div>
-                    </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-light tracking-wide ${t.type === 'income' ? 'text-uwjota-success' : 'text-uwjota-error'}`}>
-                      {t.type === 'income' ? '+' : '-'}{formatBRL(t.value).replace('R$', '').trim()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <button onClick={() => deleteTransaction(t.id)} className="text-uwjota-muted hover:text-uwjota-error transition-colors">
-                        <Trash2 size={14} />
-                      </button>
-                    </td>
+            <div className="overflow-x-auto overflow-y-auto">
+              <table className="min-w-full divide-y divide-uwjota-border">
+                <thead className="bg-[#18181b] sticky top-0 z-10 shadow-sm">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-[10px] font-medium text-uwjota-muted uppercase tracking-widest">Data</th>
+                    <th className="px-6 py-4 text-left text-[10px] font-medium text-uwjota-muted uppercase tracking-widest">Descrição</th>
+                    <th className="px-6 py-4 text-right text-[10px] font-medium text-uwjota-muted uppercase tracking-widest">Valor</th>
+                    <th className="px-6 py-4 text-right text-[10px] font-medium text-uwjota-muted uppercase tracking-widest"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-uwjota-border">
+                  {[...transactions].sort((a,b) => b.createdAt - a.createdAt).map(t => (
+                    <tr key={t.id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-uwjota-muted font-mono">
+                        {new Date(t.date).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-uwjota-text">
+                        <div className="flex items-center">
+                          <span className="font-medium">{t.note || (t.type === 'income' ? 'Receita' : 'Despesa')}</span>
+                        </div>
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-light tracking-wide ${t.type === 'income' ? 'text-uwjota-success' : 'text-uwjota-error'}`}>
+                        {t.type === 'income' ? '+' : '-'}{formatBRL(t.value).replace('R$', '').trim()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        <button onClick={() => deleteTransaction(t.id)} className="text-uwjota-muted hover:text-uwjota-error transition-colors">
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
@@ -188,15 +186,15 @@ const FinanceView: React.FC = () => {
           <div className="flex gap-4 mb-6">
             <button
               type="button"
-              className={`flex-1 py-3 rounded border text-xs uppercase tracking-widest transition-all ${formData.type === 'income' ? 'bg-uwjota-success/10 border-uwjota-success text-uwjota-success' : 'border-uwjota-border text-uwjota-muted hover:border-uwjota-text'}`}
-              onClick={() => setFormData({...formData, type: 'income', category: categories[0]})}
+              className={`flex-1 py-3 rounded-lg border text-xs uppercase tracking-widest transition-all ${formData.type === 'income' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'border-uwjota-border text-uwjota-muted hover:border-uwjota-text'}`}
+              onClick={() => setFormData({...formData, type: 'income'})}
             >
               Receita
             </button>
             <button
               type="button"
-              className={`flex-1 py-3 rounded border text-xs uppercase tracking-widest transition-all ${formData.type === 'expense' ? 'bg-uwjota-error/10 border-uwjota-error text-uwjota-error' : 'border-uwjota-border text-uwjota-muted hover:border-uwjota-text'}`}
-              onClick={() => setFormData({...formData, type: 'expense', category: categories[0]})}
+              className={`flex-1 py-3 rounded-lg border text-xs uppercase tracking-widest transition-all ${formData.type === 'expense' ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'border-uwjota-border text-uwjota-muted hover:border-uwjota-text'}`}
+              onClick={() => setFormData({...formData, type: 'expense'})}
             >
               Despesa
             </button>
@@ -222,24 +220,16 @@ const FinanceView: React.FC = () => {
             />
           </div>
 
-          <Select 
-             label="Classificação"
-             required
-             value={formData.category}
-             onChange={e => setFormData({...formData, category: e.target.value})}
-             options={categories.map(c => ({ value: c, label: c }))}
-          />
-
           <div className="mb-6">
             <Input 
-               label="Anotação (Opcional)" 
+               label="Descrição" 
                value={formData.note}
                onChange={e => setFormData({...formData, note: e.target.value})}
-               placeholder="..."
+               placeholder="Do que se trata..."
             />
           </div>
 
-          <div className="flex justify-end space-x-3 mt-8 pt-4 border-t border-uwjota-border">
+          <div className="flex justify-end space-x-3 mt-8 pt-4 border-t border-white/5">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Descartar</Button>
             <Button type="submit">Gravar</Button>
           </div>

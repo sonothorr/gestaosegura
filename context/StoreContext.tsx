@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { AppContextType, AppState, Task, Transaction } from '../types';
+import { AppContextType, AppState, Task, Transaction, Note } from '../types';
 
-const STORAGE_KEY = 'lifesync_data_v1';
+// Atualizado para refletir o nome do sistema
+const STORAGE_KEY = 'uwjota_system_v1';
 
 const defaultState: AppState = {
   tasks: [],
   transactions: [],
+  notes: [],
   theme: 'light',
 };
 
@@ -16,24 +18,52 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        return { ...defaultState, ...JSON.parse(stored) };
+        const parsedState = JSON.parse(stored);
+        
+        // --- DATA INTEGRITY CHECK ---
+        const safeState: AppState = {
+          ...defaultState, // Defaults
+          ...parsedState,  // Overwrites
+          notes: Array.isArray(parsedState.notes) ? parsedState.notes : [],
+          tasks: Array.isArray(parsedState.tasks) ? parsedState.tasks : [],
+          transactions: Array.isArray(parsedState.transactions) ? parsedState.transactions : [],
+        };
+
+        // Lógica de Limpeza ao Carregar
+        // Garantimos que tarefas recorrentes nunca fiquem "travadas" como completed: true no estado persistido
+        // se a lógica anterior as salvou incorretamente.
+        safeState.tasks = safeState.tasks.map((t: Task) => {
+          if (t.recurrence && t.recurrence.type !== 'once' && t.completed) {
+            return { ...t, completed: false }; // Força false, confiamos apenas no lastCompletedDate
+          }
+          return t;
+        });
+
+        return safeState;
       }
     } catch (e) {
-      console.error("Failed to load data", e);
+      console.error("Falha ao carregar dados do sistema:", e);
     }
     return defaultState;
   });
 
-  // Persist to LocalStorage
+  // Effect 1: Persistência de Dados
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    // Apply theme
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.error("Erro Crítico: Falha ao salvar no LocalStorage", e);
+    }
+  }, [state]);
+
+  // Effect 2: Aplicação do Tema
+  useEffect(() => {
     if (state.theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [state]);
+  }, [state.theme]);
 
   const setTheme = useCallback((theme: 'light' | 'dark') => {
     setState(prev => ({ ...prev, theme }));
@@ -65,9 +95,36 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const toggleTaskCompletion = useCallback((id: string) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    
     setState(prev => ({
       ...prev,
-      tasks: prev.tasks.map(t => (t.id === id ? { ...t, completed: !t.completed } : t)),
+      tasks: prev.tasks.map(t => {
+        if (t.id === id) {
+          const isRecurring = t.recurrence && t.recurrence.type !== 'once';
+          
+          if (isRecurring) {
+            // Lógica para Recorrentes:
+            // Se já foi completada hoje, "desfazemos" removendo a data (ou setando null/ontem)
+            // Se não foi completada hoje, setamos a data para hoje.
+            // O campo 'completed' boolean fica SEMPRE false para recorrentes no DB.
+            const isCompletedToday = t.lastCompletedDate === todayStr;
+            return {
+              ...t,
+              completed: false, // Sempre false para não bugar o filtro de "pendentes" amanhã
+              lastCompletedDate: isCompletedToday ? '' : todayStr
+            };
+          } else {
+            // Lógica para Tarefas Únicas (Padrão)
+            return { 
+              ...t, 
+              completed: !t.completed,
+              lastCompletedDate: !t.completed ? todayStr : t.lastCompletedDate 
+            };
+          }
+        }
+        return t;
+      }),
     }));
   }, []);
 
@@ -88,9 +145,34 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }));
   }, []);
 
+  // --- Note Logic ---
+  const addNote = useCallback((noteData: Omit<Note, 'id' | 'updatedAt'>) => {
+    const newNote: Note = {
+      ...noteData,
+      id: crypto.randomUUID(),
+      updatedAt: Date.now(),
+    };
+    setState(prev => ({ ...prev, notes: [newNote, ...prev.notes] }));
+  }, []);
+
+  const updateNote = useCallback((id: string, updates: Partial<Note>) => {
+    setState(prev => ({
+      ...prev,
+      notes: prev.notes.map(n => (n.id === id ? { ...n, ...updates, updatedAt: Date.now() } : n)),
+    }));
+  }, []);
+
+  const deleteNote = useCallback((id: string) => {
+    setState(prev => ({
+      ...prev,
+      notes: prev.notes.filter(n => n.id !== id),
+    }));
+  }, []);
+
+
   // --- System Logic ---
   const resetData = useCallback(() => {
-    if (window.confirm("Tem certeza? Isso apagará todos os dados permanentemente.")) {
+    if (window.confirm("ATENÇÃO: Isso apagará todos os dados permanentemente e reiniciará o sistema. Continuar?")) {
       setState({ ...defaultState, theme: state.theme });
     }
   }, [state.theme]);
@@ -111,18 +193,21 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const importData = useCallback((jsonStr: string) => {
     try {
       const parsed = JSON.parse(jsonStr);
-      // Basic validation
-      if (!Array.isArray(parsed.tasks) || !Array.isArray(parsed.transactions)) {
-        throw new Error("Invalid format");
+      if (!parsed || typeof parsed !== 'object') {
+        throw new Error("Formato de JSON inválido");
       }
-      setState(prev => ({
-        ...prev,
-        tasks: parsed.tasks,
-        transactions: parsed.transactions,
-      }));
+      const importedState: AppState = {
+        ...defaultState,
+        ...parsed,
+        tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
+        transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
+        notes: Array.isArray(parsed.notes) ? parsed.notes : [],
+        theme: parsed.theme === 'dark' || parsed.theme === 'light' ? parsed.theme : 'light',
+      };
+      setState(importedState);
       return true;
     } catch (e) {
-      console.error(e);
+      console.error("Erro na Importação:", e);
       return false;
     }
   }, []);
@@ -138,6 +223,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         toggleTaskCompletion,
         addTransaction,
         deleteTransaction,
+        addNote,
+        updateNote,
+        deleteNote,
         resetData,
         exportData,
         importData,

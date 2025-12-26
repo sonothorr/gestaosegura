@@ -3,35 +3,52 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>uwjota | Sistema Exclusivo</title>
+    <title>uwjota | Sistema Pessoal</title>
     
-    <!-- Branding Icons & Mobile Settings -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B0B0B'/%3E%3Cpath d='M32 14 L50 32 L32 50 L14 32 Z' fill='none' stroke='%23C8A951' stroke-width='3'/%3E%3C/svg%3E" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B0B0B'/%3E%3Cpath d='M32 14 L50 32 L32 50 L14 32 Z' fill='none' stroke='%23C8A951' stroke-width='3'/%3E%3C/svg%3E" />
-    <meta name="theme-color" content="#0B0B0B">
+    <!-- Branding Icons - High Contrast App Icon Style -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='0' y='0' width='64' height='64' rx='16' ry='16' fill='%2338bdf8'/%3E%3Cpath d='M32 16 L48 32 L32 48 L16 32 Z' fill='%23020617'/%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='0' y='0' width='64' height='64' rx='16' ry='16' fill='%2338bdf8'/%3E%3Cpath d='M32 16 L48 32 L32 48 L16 32 Z' fill='%23020617'/%3E%3C/svg%3E" />
+    <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
-        darkMode: 'class', // We will force dark mode class or just use the colors directly
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'system-ui', 'sans-serif'],
+              sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
             },
             colors: {
-              // Custom Palette based on request
               uwjota: {
-                bg: '#0B0B0B',      // Background
-                card: '#161616',    // Cards
-                gold: '#C8A951',    // Primary/Luxury
-                success: '#2ECC71',
-                error: '#E74C3C',
-                text: '#EAEAEA',    // Main text
-                muted: '#888888',   // Secondary text
-                border: '#333333'   // Subtle borders
+                bg: '#000000',      // Pure Black
+                card: '#020617',    // Slate 950 (Deepest Blue)
+                primary: '#38bdf8', // Sky 400
+                primaryDark: '#0ea5e9', // Sky 500
+                primaryLight: '#bae6fd', // Sky 200
+                success: '#34d399', // Emerald 400
+                error: '#fb7185',   // Rose 400
+                warning: '#fbbf24', // Amber 400
+                text: '#f8fafc',    // Slate 50 (Crisp White)
+                muted: '#64748b',   // Slate 500 (Darker Muted)
+                border: '#1e293b'   // Slate 800
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+              'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+              'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
               }
             }
           }
@@ -50,29 +67,43 @@
 }
 </script>
 <style>
-  /* Scrollbar customization for luxury feel */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+  /* Modern Scrollbar - Darker Track */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0B0B0B;
+    background: #000000;
   }
   ::-webkit-scrollbar-thumb {
-    background: #333;
-    border-radius: 4px;
+    background: #1e293b;
+    border-radius: 20px;
+    border: 1px solid #000000;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #C8A951;
+    background: #38bdf8;
   }
+
   body {
-    background-color: #0B0B0B;
-    color: #EAEAEA;
-    overscroll-behavior-y: none; /* Prevent bounce effect on mobile */
+    background-color: #000000;
+    color: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Glassmorphism - Darker/Deep Space */
+  .glass-panel {
+    background: rgba(2, 6, 23, 0.7); /* Slate 950 base */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(30, 41, 59, 0.4); /* Slate 800 subtle */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   }
 </style>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-uwjota-bg text-uwjota-text antialiased selection:bg-uwjota-gold selection:text-black">
+  <body class="bg-uwjota-bg text-uwjota-text antialiased selection:bg-uwjota-primary selection:text-black overflow-x-hidden">
     <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
