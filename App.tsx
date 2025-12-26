@@ -43,7 +43,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-uwjota-bg text-uwjota-text font-sans relative overflow-hidden">
+    <div className="min-h-[100dvh] flex flex-col bg-uwjota-bg text-uwjota-text font-sans relative overflow-hidden">
       
       {/* --- Ambient Background Lighting (Midnight Theme) --- */}
       

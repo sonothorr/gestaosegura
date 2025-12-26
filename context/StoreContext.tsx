@@ -9,6 +9,15 @@ const defaultState: AppState = {
   notes: [],
 };
 
+// Polyfill seguro para geração de IDs em navegadores antigos (iOS < 15.4)
+const generateId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Fallback timestamp + random
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+};
+
 const StoreContext = createContext<AppContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -67,7 +76,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const addTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt' | 'completed'>) => {
     const newTask: Task = {
       ...taskData,
-      id: crypto.randomUUID(),
+      id: generateId(),
       completed: false,
       createdAt: Date.now(),
     };
@@ -121,7 +130,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const addTransaction = useCallback((txData: Omit<Transaction, 'id' | 'createdAt'>) => {
     const newTx: Transaction = {
       ...txData,
-      id: crypto.randomUUID(),
+      id: generateId(),
       createdAt: Date.now(),
     };
     setState(prev => ({ ...prev, transactions: [...prev.transactions, newTx] }));
@@ -138,7 +147,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const addNote = useCallback((noteData: Omit<Note, 'id' | 'updatedAt'>) => {
     const newNote: Note = {
       ...noteData,
-      id: crypto.randomUUID(),
+      id: generateId(),
       updatedAt: Date.now(),
     };
     setState(prev => ({ ...prev, notes: [newNote, ...prev.notes] }));
