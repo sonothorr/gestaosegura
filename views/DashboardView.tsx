@@ -31,6 +31,7 @@ const DashboardView: React.FC = () => {
   
   const [noteForm, setNoteForm] = useState({ title: '', content: '' });
 
+  // ... (Keep existing handlers) ...
   const handleQuickTask = (e: React.FormEvent) => {
     e.preventDefault();
     addTask({ ...taskForm, recurrence: { type: 'once' } });
@@ -54,7 +55,6 @@ const DashboardView: React.FC = () => {
     setModals(prev => ({ ...prev, note: false }));
     setNoteForm({ title: '', content: '' });
   };
-
 
   const today = new Date();
   today.setHours(0,0,0,0);
@@ -130,80 +130,53 @@ const DashboardView: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <header className="mb-8 flex items-end justify-between border-b border-white/5 pb-4">
+      <header className="mb-6 flex items-end justify-between border-b border-uwjota-border pb-4">
         <div>
-            <h1 className="text-3xl font-light tracking-tight text-white mb-1">Visão Geral</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-uwjota-text">Visão Geral</h1>
+            <p className="text-sm text-uwjota-muted mt-1">Resumo das atividades de hoje.</p>
         </div>
-        <div className="flex items-center opacity-70 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+        <div className="flex items-center bg-uwjota-card px-3 py-1.5 rounded-full border border-uwjota-border shadow-sm">
           <Diamond className="text-uwjota-primary mr-2" size={14} fill="currentColor" fillOpacity={0.2} />
-          <span className="text-xs font-medium tracking-wider text-gray-300 uppercase">uwjota</span>
+          <span className="text-xs font-bold tracking-wider text-uwjota-text uppercase">uwjota</span>
         </div>
       </header>
 
       {/* --- QUICK ACTIONS SECTION --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <button 
-          onClick={() => setModals(p => ({...p, task: true}))}
-          className="group relative flex items-center justify-between p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/30 transition-all duration-300"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-blue-500/10 rounded-lg text-blue-400 group-hover:bg-blue-500/20 transition-all">
-              <CheckSquare size={20} />
+        {[
+          { icon: CheckSquare, label: 'Nova Tarefa', sub: 'Ação Rápida', color: 'text-violet-400', bg: 'bg-violet-900/20', action: () => setModals(p => ({...p, task: true})) },
+          { icon: Wallet, label: 'Lançamento', sub: 'Financeiro', color: 'text-emerald-400', bg: 'bg-emerald-900/20', action: () => setModals(p => ({...p, finance: true})) },
+          { icon: StickyNote, label: 'Anotação', sub: 'Lembrete', color: 'text-fuchsia-400', bg: 'bg-fuchsia-900/20', action: () => setModals(p => ({...p, note: true})) },
+        ].map((btn, i) => (
+          <button 
+            key={i}
+            onClick={btn.action}
+            className="group relative flex items-center justify-between p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/40 hover:shadow-[0_0_15px_rgba(139,92,246,0.1)] transition-all duration-300"
+          >
+            <div className="flex items-center gap-4">
+              <div className={`p-2.5 rounded-lg ${btn.bg} ${btn.color} group-hover:scale-110 transition-transform`}>
+                <btn.icon size={20} />
+              </div>
+              <div className="text-left">
+                <span className="block text-sm font-semibold text-uwjota-text">{btn.label}</span>
+                <span className="text-[10px] text-uwjota-muted uppercase tracking-wider font-medium">{btn.sub}</span>
+              </div>
             </div>
-            <div className="text-left">
-              <span className="block text-sm font-medium text-gray-200">Nova Tarefa</span>
-              <span className="text-[10px] text-uwjota-muted uppercase tracking-wider">Ação Rápida</span>
-            </div>
-          </div>
-          <Plus size={16} className="text-uwjota-muted group-hover:text-white transition-colors" />
-        </button>
-
-        <button 
-          onClick={() => setModals(p => ({...p, finance: true}))}
-          className="group relative flex items-center justify-between p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/30 transition-all duration-300"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-emerald-500/10 rounded-lg text-emerald-400 group-hover:bg-emerald-500/20 transition-all">
-              <Wallet size={20} />
-            </div>
-            <div className="text-left">
-              <span className="block text-sm font-medium text-gray-200">Lançamento</span>
-              <span className="text-[10px] text-uwjota-muted uppercase tracking-wider">Financeiro</span>
-            </div>
-          </div>
-          <Plus size={16} className="text-uwjota-muted group-hover:text-white transition-colors" />
-        </button>
-
-        <button 
-          onClick={() => setModals(p => ({...p, note: true}))}
-          className="group relative flex items-center justify-between p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/30 transition-all duration-300"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-purple-500/10 rounded-lg text-purple-400 group-hover:bg-purple-500/20 transition-all">
-              <StickyNote size={20} />
-            </div>
-            <div className="text-left">
-              <span className="block text-sm font-medium text-gray-200">Anotação</span>
-              <span className="text-[10px] text-uwjota-muted uppercase tracking-wider">Lembrete</span>
-            </div>
-          </div>
-          <Plus size={16} className="text-uwjota-muted group-hover:text-white transition-colors" />
-        </button>
+            <Plus size={16} className="text-uwjota-border group-hover:text-uwjota-primary transition-colors" />
+          </button>
+        ))}
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Task KPI */}
-        <Card className="relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5">
-            <Activity size={80} className="text-white" />
-          </div>
+        <Card className="relative overflow-hidden">
           <div className="flex flex-col h-full justify-between relative z-10">
             <div>
-              <p className="text-uwjota-muted text-xs font-medium uppercase tracking-wider">Tarefas Pendentes</p>
-              <h3 className="text-4xl font-medium text-white mt-3">{pendingTasksToday.length}</h3>
+              <p className="text-uwjota-muted text-xs font-bold uppercase tracking-wider">Tarefas Pendentes</p>
+              <h3 className="text-4xl font-mono font-medium text-uwjota-text mt-2">{pendingTasksToday.length}</h3>
             </div>
-            <div className="mt-6 flex items-center text-xs text-uwjota-primary bg-uwjota-primary/10 px-3 py-1.5 rounded-md w-fit font-medium">
+            <div className="mt-6 flex items-center text-xs text-uwjota-primary bg-uwjota-primary/10 px-3 py-1.5 rounded-md w-fit font-semibold border border-uwjota-primary/20">
                <Calendar size={12} className="mr-2" /> 
                {completedTodayCount} concluídas hoje
             </div>
@@ -212,21 +185,18 @@ const DashboardView: React.FC = () => {
 
         {/* Finance KPI */}
         <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-5">
-            <DollarSign size={80} className="text-white" />
-          </div>
           <div className="flex flex-col h-full justify-between relative z-10">
             <div>
-              <p className="text-uwjota-muted text-xs font-medium uppercase tracking-wider">Saldo Atual</p>
-              <h3 className={`text-4xl font-medium mt-3 ${financials.balance >= 0 ? 'text-white' : 'text-uwjota-error'}`}>
+              <p className="text-uwjota-muted text-xs font-bold uppercase tracking-wider">Saldo Atual</p>
+              <h3 className={`text-3xl font-mono font-medium mt-2 tracking-tight ${financials.balance >= 0 ? 'text-uwjota-text' : 'text-uwjota-error'}`}>
                 {formatBRL(financials.balance)}
               </h3>
             </div>
-            <div className="mt-6 flex space-x-3 text-xs">
-              <span className="flex items-center text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
+            <div className="mt-6 flex space-x-3 text-xs font-mono">
+              <span className="flex items-center text-emerald-400 bg-emerald-950/30 border border-emerald-900 px-2 py-1 rounded">
                 <TrendingUp size={12} className="mr-1" /> {formatBRL(financials.income)}
               </span>
-              <span className="flex items-center text-rose-400 bg-rose-500/10 px-2 py-1 rounded">
+              <span className="flex items-center text-rose-400 bg-rose-950/30 border border-rose-900 px-2 py-1 rounded">
                 <TrendingDown size={12} className="mr-1" /> {formatBRL(financials.expense)}
               </span>
             </div>
@@ -235,7 +205,7 @@ const DashboardView: React.FC = () => {
 
         {/* Chart KPI */}
         <Card>
-           <p className="text-uwjota-muted text-xs font-medium uppercase tracking-wider mb-4">Fluxo de Caixa</p>
+           <p className="text-uwjota-muted text-xs font-bold uppercase tracking-wider mb-4">Fluxo de Caixa</p>
            <div className="h-28">
              {chartData.length > 0 ? (
                <ResponsiveContainer width="100%" height="100%">
@@ -251,8 +221,8 @@ const DashboardView: React.FC = () => {
                       </linearGradient>
                     </defs>
                     <Tooltip 
-                      contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px', color: '#fafafa', fontSize: '10px' }}
-                      itemStyle={{color: '#fff'}}
+                      contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px', color: '#f3f4f6', fontSize: '10px' }}
+                      itemStyle={{color: '#f3f4f6'}}
                       formatter={(value: number, name: string) => [formatBRL(value), name === 'income' ? 'Rec.' : 'Desp.']}
                       labelFormatter={() => ''}
                     />
@@ -272,33 +242,33 @@ const DashboardView: React.FC = () => {
         <Card title="Fila de Prioridade">
           {pendingTasksToday.length === 0 ? (
             <div className="text-center py-10">
-              <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-uwjota-bg border border-uwjota-border rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckSquare size={24} className="text-uwjota-primary opacity-50" />
               </div>
-              <p className="text-sm text-gray-400">Todos objetivos concluídos</p>
+              <p className="text-sm text-uwjota-muted font-medium">Todos objetivos concluídos</p>
             </div>
           ) : (
-            <ul className="space-y-1">
+            <ul className="space-y-2">
               {pendingTasksToday.slice(0, 5).map(task => (
-                <li key={task.id} className="flex items-center justify-between py-3 px-3 hover:bg-white/5 rounded-lg transition-all group">
+                <li key={task.id} className="flex items-center justify-between py-3 px-3 hover:bg-uwjota-bg rounded-lg transition-all group border border-transparent hover:border-uwjota-border">
                   <div className="flex items-center space-x-4">
                     <button 
                       onClick={() => toggleTaskCompletion(task.id)}
-                      className="text-uwjota-border hover:text-uwjota-primary transition-colors focus:outline-none"
+                      className="text-uwjota-muted hover:text-uwjota-primary transition-colors focus:outline-none"
                     >
                       <Circle size={20} strokeWidth={2} className={`
                         ${task.priority === 'high' ? 'text-uwjota-error' : 'text-uwjota-muted group-hover:text-uwjota-primary'}
                       `} />
                     </button>
                     <div>
-                      <span className="block font-medium text-sm text-gray-200">{task.title}</span>
+                      <span className="block font-semibold text-sm text-uwjota-text">{task.title}</span>
                       {task.priority === 'high' && <span className="text-[10px] text-uwjota-error uppercase tracking-wider font-bold">Alta Prioridade</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {task.recurrence?.type === 'weekly' && (
-                        <div className="p-1.5 bg-blue-500/10 rounded-md">
-                          <Repeat size={12} className="text-blue-400" />
+                        <div className="p-1.5 bg-violet-900/20 rounded-md">
+                          <Repeat size={12} className="text-violet-400" />
                         </div>
                     )}
                     <Badge color={task.priority === 'high' ? 'red' : 'yellow'}>
@@ -316,16 +286,16 @@ const DashboardView: React.FC = () => {
              <div className="flex flex-col h-full justify-between">
                 <div className="py-4">
                    <div className="flex justify-between items-end mb-4">
-                     <p className="text-uwjota-muted text-xs font-medium uppercase tracking-wider">Conclusão Diária</p>
-                     <span className="text-3xl text-white font-medium">
+                     <p className="text-uwjota-muted text-xs font-bold uppercase tracking-wider">Conclusão Diária</p>
+                     <span className="text-3xl font-mono text-uwjota-text font-medium">
                        {performancePercentage}<span className="text-lg text-uwjota-muted">%</span>
                      </span>
                    </div>
                    
                    {/* Clean Progress Bar */}
-                   <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                   <div className="w-full bg-uwjota-bg h-3 rounded-full overflow-hidden border border-uwjota-border/50">
                       <div 
-                        className="h-full rounded-full relative overflow-hidden transition-all duration-1000 ease-out bg-uwjota-primary" 
+                        className="h-full rounded-full relative overflow-hidden transition-all duration-1000 ease-out bg-uwjota-primary shadow-[0_0_15px_rgba(139,92,246,0.5)]" 
                         style={{ width: `${performancePercentage}%` }}
                       >
                       </div>
@@ -336,8 +306,8 @@ const DashboardView: React.FC = () => {
                    </p>
                 </div>
                 
-                <div className="bg-uwjota-card border border-uwjota-border p-4 rounded-lg mt-4">
-                    <p className="text-sm text-gray-400 italic font-light leading-relaxed">
+                <div className="bg-uwjota-bg border border-uwjota-border p-5 rounded-lg mt-4">
+                    <p className="text-sm text-uwjota-muted italic font-medium leading-relaxed pb-1">
                       "A consistência é a chave do sucesso."
                     </p>
                 </div>
@@ -346,76 +316,59 @@ const DashboardView: React.FC = () => {
       </div>
 
       {/* --- QUICK ACTION MODALS --- */}
-      
-      {/* Task Modal */}
       <Modal isOpen={modals.task} onClose={() => setModals(p => ({...p, task: false}))} title="Adicionar Tarefa">
          <form onSubmit={handleQuickTask}>
            <Input label="Objetivo" value={taskForm.title} onChange={e => setTaskForm({...taskForm, title: e.target.value})} required placeholder="Detalhes da tarefa..." />
-           
            <div className="grid grid-cols-2 gap-4">
               <Input label="Data" type="date" value={taskForm.date} onChange={e => setTaskForm({...taskForm, date: e.target.value})} required />
               <Select label="Nível de Prioridade" value={taskForm.priority} onChange={e => setTaskForm({...taskForm, priority: e.target.value as Priority})} options={[{value:'low', label:'Baixa'}, {value:'medium', label:'Média'}, {value:'high', label:'Alta'}]} />
            </div>
-
-           <div className="mb-6 group">
-              <label className="block text-xs font-medium text-uwjota-muted mb-2 ml-1">Resumo (Opcional)</label>
+           <div className="mb-6">
+              <label className="block text-xs font-semibold text-uwjota-text mb-1.5 ml-0.5">Resumo (Opcional)</label>
               <textarea
-                className="w-full rounded-lg border border-uwjota-border bg-uwjota-card/50 text-uwjota-text placeholder-uwjota-muted/40 focus:border-uwjota-primary focus:bg-uwjota-card focus:ring-1 focus:ring-uwjota-primary outline-none px-4 py-2.5 text-sm transition-all duration-200"
+                className="w-full rounded-lg border border-uwjota-border bg-[#0a0a0a] text-uwjota-text placeholder-uwjota-muted/50 focus:border-uwjota-primary focus:ring-1 focus:ring-uwjota-primary/30 outline-none px-3 py-2.5 text-sm resize-none"
                 rows={3}
                 value={taskForm.description}
                 onChange={e => setTaskForm({...taskForm, description: e.target.value})}
               />
            </div>
-
-           <div className="flex justify-end pt-4 mt-6 border-t border-white/5"><Button type="submit">Adicionar</Button></div>
+           <div className="flex justify-end pt-4 mt-6 border-t border-uwjota-border"><Button type="submit">Adicionar</Button></div>
          </form>
       </Modal>
 
-      {/* Finance Modal */}
       <Modal isOpen={modals.finance} onClose={() => setModals(p => ({...p, finance: false}))} title="Adicionar Transação">
          <form onSubmit={handleQuickFinance}>
-           <div className="flex gap-4 mb-6 p-1 bg-white/5 rounded-lg">
-              <button type="button" onClick={() => setFinanceForm({...financeForm, type: 'income'})} className={`flex-1 py-2.5 text-xs uppercase tracking-wider rounded-md transition-all font-medium ${financeForm.type === 'income' ? 'bg-emerald-500/20 text-emerald-400' : 'text-uwjota-muted hover:text-white'}`}>Receita</button>
-              <button type="button" onClick={() => setFinanceForm({...financeForm, type: 'expense'})} className={`flex-1 py-2.5 text-xs uppercase tracking-wider rounded-md transition-all font-medium ${financeForm.type === 'expense' ? 'bg-rose-500/20 text-rose-400' : 'text-uwjota-muted hover:text-white'}`}>Despesa</button>
+           <div className="flex gap-4 mb-6 p-1 bg-uwjota-bg rounded-lg border border-uwjota-border">
+              <button type="button" onClick={() => setFinanceForm({...financeForm, type: 'income'})} className={`flex-1 py-2 text-xs uppercase tracking-wider rounded-md transition-all font-bold ${financeForm.type === 'income' ? 'bg-emerald-950/30 text-emerald-400 border border-emerald-900 shadow-sm' : 'text-uwjota-muted'}`}>Receita</button>
+              <button type="button" onClick={() => setFinanceForm({...financeForm, type: 'expense'})} className={`flex-1 py-2 text-xs uppercase tracking-wider rounded-md transition-all font-bold ${financeForm.type === 'expense' ? 'bg-rose-950/30 text-rose-400 border border-rose-900 shadow-sm' : 'text-uwjota-muted'}`}>Despesa</button>
            </div>
-           
            <div className="grid grid-cols-2 gap-4">
               <Input label="Valor" type="number" step="0.01" value={financeForm.value} onChange={e => setFinanceForm({...financeForm, value: e.target.value})} required placeholder="0.00" />
               <Input label="Data" type="date" value={financeForm.date} onChange={e => setFinanceForm({...financeForm, date: e.target.value})} required />
            </div>
-
            <div className="mb-6">
               <Input label="Descrição" value={financeForm.note} onChange={e => setFinanceForm({...financeForm, note: e.target.value})} placeholder="Do que se trata..." />
            </div>
-
-           <div className="flex justify-end pt-4 mt-6 border-t border-white/5"><Button type="submit">Registrar</Button></div>
+           <div className="flex justify-end pt-4 mt-6 border-t border-uwjota-border"><Button type="submit">Registrar</Button></div>
          </form>
       </Modal>
 
-      {/* Note Modal */}
       <Modal isOpen={modals.note} onClose={() => setModals(p => ({...p, note: false}))} title="Nota Rápida">
          <form onSubmit={handleQuickNote}>
-           <Input 
-              label="Título" 
-              value={noteForm.title} 
-              onChange={e => setNoteForm({...noteForm, title: e.target.value})} 
-              placeholder="Assunto principal..." 
-              className="font-medium" 
-            />
+           <Input label="Título" value={noteForm.title} onChange={e => setNoteForm({...noteForm, title: e.target.value})} placeholder="Assunto principal..." className="font-semibold" />
            <div className="mb-6">
-             <label className="block text-xs font-medium text-uwjota-muted mb-2 ml-1">Conteúdo</label>
+             <label className="block text-xs font-semibold text-uwjota-text mb-1.5 ml-0.5">Conteúdo</label>
              <textarea 
-                className="w-full rounded-lg border border-uwjota-border bg-uwjota-card/50 text-uwjota-text placeholder-uwjota-muted/40 focus:border-uwjota-primary focus:bg-uwjota-card focus:ring-1 focus:ring-uwjota-primary outline-none px-4 py-2.5 text-sm transition-all duration-200"
+                className="w-full rounded-lg border border-uwjota-border bg-[#0a0a0a] text-uwjota-text placeholder-uwjota-muted/50 focus:border-uwjota-primary focus:ring-1 focus:ring-uwjota-primary/30 outline-none px-3 py-2.5 text-sm resize-none"
                 rows={4} 
                 value={noteForm.content} 
                 onChange={e => setNoteForm({...noteForm, content: e.target.value})} 
                 placeholder="Digite aqui...">
              </textarea>
            </div>
-           <div className="flex justify-end pt-4 mt-6 border-t border-white/5"><Button type="submit">Salvar Nota</Button></div>
+           <div className="flex justify-end pt-4 mt-6 border-t border-uwjota-border"><Button type="submit">Salvar Nota</Button></div>
          </form>
       </Modal>
-
     </div>
   );
 };

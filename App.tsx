@@ -45,23 +45,22 @@ const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-uwjota-bg text-uwjota-text font-sans relative overflow-hidden">
       
-      {/* --- Ambient Background Lighting (Subtle Deep Space) --- */}
-      {/* Top Left: Very Subtle Sky Blue */}
-      <div className="fixed -top-[200px] -left-[200px] w-[800px] h-[800px] bg-sky-900/10 rounded-full blur-[140px] pointer-events-none z-0 mix-blend-screen" />
+      {/* --- Ambient Background Lighting (Midnight Theme) --- */}
       
-      {/* Bottom Right: Very Subtle Cyan */}
-      <div className="fixed -bottom-[200px] -right-[200px] w-[700px] h-[700px] bg-cyan-900/10 rounded-full blur-[140px] pointer-events-none z-0 mix-blend-screen" />
+      {/* Top Left: Deep Violet */}
+      <div className="fixed -top-[300px] -left-[100px] w-[900px] h-[900px] rounded-full blur-[180px] pointer-events-none z-0 bg-violet-900/10 mix-blend-screen opacity-60 animate-pulse-slow" />
       
-      {/* Center: Removed center glow for darker depth */}
+      {/* Bottom Right: Subtle Fuchsia */}
+      <div className="fixed -bottom-[300px] -right-[100px] w-[900px] h-[900px] rounded-full blur-[180px] pointer-events-none z-0 bg-fuchsia-900/10 mix-blend-screen opacity-60" />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-x-hidden w-full py-8 px-6 md:px-32 pb-40 transition-all duration-500 relative z-10">
+      <main className="flex-1 overflow-x-hidden w-full py-8 px-6 md:px-32 pb-40 relative z-10">
         {renderView()}
       </main>
 
       {/* Modern Floating Navigation Bar */}
       <nav className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-md">
-        <div className="glass-panel rounded-2xl px-2 py-2 flex justify-between items-center shadow-2xl bg-[#020617]/80 border border-white/5 shadow-black/50">
+        <div className="glass-panel rounded-2xl px-2 py-2 flex justify-between items-center shadow-2xl shadow-black/80 border border-uwjota-border/80">
           {navItems.map(item => {
             const isActive = currentView === item.id;
 
@@ -72,16 +71,16 @@ const AppContent: React.FC = () => {
                 className={`relative flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-300 group flex-1`}
               >
                 {/* Active Indicator Background */}
-                <div className={`absolute inset-0 bg-sky-500/10 rounded-xl transition-all duration-300 ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`} />
+                <div className={`absolute inset-0 bg-uwjota-primary/10 rounded-xl transition-all duration-300 ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`} />
 
                 <item.icon 
                   size={20} 
                   strokeWidth={isActive ? 2.5 : 2} 
-                  className={`relative z-10 transition-all duration-300 ${isActive ? 'text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]' : 'text-slate-500 group-hover:text-sky-200'}`} 
+                  className={`relative z-10 transition-all duration-300 ${isActive ? 'text-uwjota-primary drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]' : 'text-uwjota-muted group-hover:text-uwjota-primary'}`} 
                 />
                 
                 {/* Active Dot */}
-                <span className={`absolute -bottom-1 w-1 h-1 rounded-full bg-sky-400 transition-all duration-300 ${isActive ? 'opacity-100 box-shadow-[0_0_5px_#38bdf8]' : 'opacity-0'}`} />
+                <span className={`absolute -bottom-1 w-1 h-1 rounded-full bg-uwjota-primary transition-all duration-300 ${isActive ? 'opacity-100 box-shadow-[0_0_5px_currentColor]' : 'opacity-0'}`} />
               </button>
             );
           })}

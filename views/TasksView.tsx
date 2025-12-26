@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Card, Button, Input, Select, Modal, Badge } from '../components/UI';
-import { Plus, CheckCircle2, Circle, Trash2, Edit2, Repeat, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, CheckCircle2, Circle, Trash2, Edit2, Repeat } from 'lucide-react';
 import { Task, Priority } from '../types';
 
 const TasksView: React.FC = () => {
@@ -10,7 +10,7 @@ const TasksView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // Form State
+  // ... (keep existing state and logic) ...
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -51,7 +51,6 @@ const TasksView: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     const taskPayload = {
       title: formData.title,
       description: formData.description,
@@ -62,12 +61,8 @@ const TasksView: React.FC = () => {
         days: formData.recurrenceType === 'weekly' ? formData.recurrenceDays : undefined
       }
     };
-
-    if (editingTask) {
-      updateTask(editingTask.id, taskPayload);
-    } else {
-      addTask(taskPayload);
-    }
+    if (editingTask) updateTask(editingTask.id, taskPayload);
+    else addTask(taskPayload);
     setIsModalOpen(false);
     resetForm();
   };
@@ -83,7 +78,6 @@ const TasksView: React.FC = () => {
     });
   };
 
-  // Helper de Status de Conclusão Dinâmico
   const getTaskStatus = (task: Task) => {
     const todayStr = new Date().toISOString().split('T')[0];
     if (task.recurrence && task.recurrence.type !== 'once') {
@@ -95,30 +89,19 @@ const TasksView: React.FC = () => {
   const filteredTasks = useMemo(() => {
     const today = new Date();
     today.setHours(0,0,0,0);
-    
     return tasks.filter(task => {
       const taskDate = new Date(task.date);
       taskDate.setHours(0,0,0,0);
-
-      // Verificação de Recorrência
       const matchesRecurrence = (targetDate: Date) => {
-        if (!task.recurrence || task.recurrence.type === 'once') {
-          return taskDate.getTime() === targetDate.getTime();
-        }
+        if (!task.recurrence || task.recurrence.type === 'once') return taskDate.getTime() === targetDate.getTime();
         if (task.recurrence.type === 'weekly' && task.recurrence.days) {
-          // Verifica se a data alvo é maior ou igual a data de criação/início
           if (targetDate < taskDate) return false;
           return task.recurrence.days.includes(targetDate.getDay());
         }
         return false;
       };
-
-      if (filter === 'today') {
-         return matchesRecurrence(today);
-      }
-      
+      if (filter === 'today') return matchesRecurrence(today);
       if (filter === 'week') {
-         // Verifica se a tarefa ocorre em QUALQUER dia da próxima semana
          for (let i = 0; i < 7; i++) {
             const checkDate = new Date(today);
             checkDate.setDate(today.getDate() + i);
@@ -126,31 +109,15 @@ const TasksView: React.FC = () => {
          }
          return false;
       }
-      
-      return true; // All shows everything
+      return true;
     }).sort((a, b) => {
         const isADone = getTaskStatus(a);
         const isBDone = getTaskStatus(b);
-        
-        // Completas por último
         if (isADone !== isBDone) return isADone ? 1 : -1;
-        
         const prio = { high: 0, medium: 1, low: 2 };
         return prio[a.priority] - prio[b.priority];
     });
   }, [tasks, filter]);
-
-  const filterLabels = {
-    today: 'Hoje',
-    week: 'Semana',
-    all: 'Todas'
-  };
-
-  const priorityLabels = {
-    low: 'Baixa',
-    medium: 'Média',
-    high: 'Alta'
-  };
 
   const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
@@ -158,63 +125,63 @@ const TasksView: React.FC = () => {
     <div className="space-y-8">
       <div className="flex flex-row justify-between items-start gap-4 border-b border-uwjota-border pb-6">
         <div>
-          <h1 className="text-3xl font-light tracking-wide text-uwjota-text uppercase">Operações</h1>
-          <div className="flex space-x-6 mt-4">
+          <h1 className="text-2xl font-bold tracking-tight text-uwjota-text uppercase">Operações</h1>
+          <div className="flex space-x-4 mt-4 bg-uwjota-bg p-1 rounded-lg w-fit">
             {(['today', 'week', 'all'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`text-xs font-medium uppercase tracking-wider pb-1 transition-all ${
+                className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${
                   filter === f 
-                    ? 'text-uwjota-primary border-b-2 border-uwjota-primary' 
-                    : 'text-uwjota-muted hover:text-white'
+                    ? 'bg-uwjota-card text-uwjota-primary shadow-sm border border-uwjota-primary/20' 
+                    : 'text-uwjota-muted hover:text-uwjota-text'
                 }`}
               >
-                {filterLabels[f]}
+                {{today:'Hoje', week:'Semana', all:'Todas'}[f]}
               </button>
             ))}
           </div>
         </div>
         <Button onClick={() => handleOpenModal()} variant="primary">
-          <Plus size={16} className="mr-2" /> <span className="hidden sm:inline">Inicializar</span><span className="sm:hidden">Novo</span>
+          <Plus size={16} className="mr-2" /> <span className="hidden sm:inline">Nova Tarefa</span><span className="sm:hidden">Nova</span>
         </Button>
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid gap-3">
         {filteredTasks.length === 0 ? (
-          <Card className="text-center py-20 border-dashed border-uwjota-border/50 bg-transparent shadow-none">
+          <div className="text-center py-20 bg-uwjota-card/30 rounded-xl border-dashed border-2 border-uwjota-border">
             <h3 className="text-lg font-medium text-uwjota-text tracking-wide">Nenhuma operação listada</h3>
             <p className="text-uwjota-muted mt-2 text-sm">Sistema ocioso para este período.</p>
-          </Card>
+          </div>
         ) : (
           filteredTasks.map(task => {
             const isCompleted = getTaskStatus(task);
             return (
               <div 
                 key={task.id} 
-                className={`group flex items-center p-5 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/30 transition-all ${
-                  isCompleted ? 'opacity-50' : ''
+                className={`group flex items-center p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/40 transition-all ${
+                  isCompleted ? 'opacity-60 bg-uwjota-bg' : ''
                 }`}
               >
                 <button 
                   onClick={() => toggleTaskCompletion(task.id)}
-                  className={`flex-shrink-0 mr-5 transition-colors ${
-                    isCompleted ? 'text-uwjota-primary' : 'text-uwjota-muted hover:text-uwjota-primary'
+                  className={`flex-shrink-0 mr-4 transition-colors ${
+                    isCompleted ? 'text-uwjota-success' : 'text-uwjota-muted hover:text-uwjota-primary'
                   }`}
                 >
-                  {isCompleted ? <CheckCircle2 size={22} /> : <Circle size={22} />}
+                  {isCompleted ? <CheckCircle2 size={24} className="fill-uwjota-success/10" /> : <Circle size={24} />}
                 </button>
                 
                 <div className="flex-grow min-w-0">
                   <div className="flex items-center gap-3 mb-1">
-                    <h4 className={`text-sm font-medium tracking-wide truncate ${isCompleted ? 'line-through' : 'text-uwjota-text'}`}>
+                    <h4 className={`text-sm font-semibold tracking-tight truncate ${isCompleted ? 'line-through text-uwjota-muted' : 'text-uwjota-text'}`}>
                       {task.title}
                     </h4>
                     <Badge color={task.priority === 'high' ? 'red' : 'yellow'}>
-                      {priorityLabels[task.priority]}
+                      {{low:'Baixa', medium:'Média', high:'Alta'}[task.priority]}
                     </Badge>
                     {task.recurrence?.type === 'weekly' && (
-                      <Badge color="blue">
+                      <Badge color="violet">
                          <Repeat size={10} className="mr-1" /> Recorrente
                       </Badge>
                     )}
@@ -225,10 +192,10 @@ const TasksView: React.FC = () => {
                 </div>
 
                 <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
-                  <button onClick={() => handleOpenModal(task)} className="p-2 text-uwjota-muted hover:text-white rounded-md hover:bg-white/5">
+                  <button onClick={() => handleOpenModal(task)} className="p-2 text-uwjota-muted hover:text-uwjota-text rounded-md hover:bg-uwjota-bg">
                     <Edit2 size={16} />
                   </button>
-                  <button onClick={() => deleteTask(task.id)} className="p-2 text-uwjota-muted hover:text-uwjota-error rounded-md hover:bg-uwjota-error/10">
+                  <button onClick={() => deleteTask(task.id)} className="p-2 text-uwjota-muted hover:text-rose-500 rounded-md hover:bg-rose-500/10">
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -244,64 +211,34 @@ const TasksView: React.FC = () => {
         title={editingTask ? 'Editar Operação' : 'Nova Operação'}
       >
         <form onSubmit={handleSubmit}>
-          <Input 
-            label="Objetivo" 
-            required 
-            value={formData.title} 
-            onChange={e => setFormData({...formData, title: e.target.value})} 
-            placeholder="Detalhes da tarefa..."
-          />
-          
+          <Input label="Objetivo" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Detalhes da tarefa..." />
           <div className="grid grid-cols-2 gap-4">
-             <Input 
-                label={formData.recurrenceType === 'weekly' ? "Início" : "Data"}
-                type="date" 
-                required 
-                value={formData.date}
-                onChange={e => setFormData({...formData, date: e.target.value})} 
-             />
-             <Select 
-                label="Nível de Prioridade"
-                value={formData.priority}
-                onChange={e => setFormData({...formData, priority: e.target.value as Priority})}
-                options={[
-                  { value: 'low', label: 'Baixa' },
-                  { value: 'medium', label: 'Média' },
-                  { value: 'high', label: 'Alta' },
-                ]}
-             />
+             <Input label={formData.recurrenceType === 'weekly' ? "Início" : "Data"} type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+             <Select label="Prioridade" value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value as Priority})} options={[{ value: 'low', label: 'Baixa' }, { value: 'medium', label: 'Média' }, { value: 'high', label: 'Alta' }]} />
           </div>
 
           <div className="mb-6">
-            <label className="block text-xs font-medium text-uwjota-muted mb-2">Repetição</label>
+            <label className="block text-xs font-semibold text-uwjota-text mb-2">Repetição</label>
             <div className="flex space-x-3 mb-4">
-               <button
-                 type="button"
-                 onClick={() => setFormData({...formData, recurrenceType: 'once'})}
-                 className={`flex-1 py-2 text-xs uppercase tracking-wider rounded-md border transition-all ${
-                   formData.recurrenceType === 'once' 
-                    ? 'bg-uwjota-primary/10 border-uwjota-primary text-uwjota-primary' 
-                    : 'border-uwjota-border text-uwjota-muted hover:border-uwjota-muted/80'
-                 }`}
-               >
-                 Apenas Uma Vez
-               </button>
-               <button
-                 type="button"
-                 onClick={() => setFormData({...formData, recurrenceType: 'weekly'})}
-                 className={`flex-1 py-2 text-xs uppercase tracking-wider rounded-md border transition-all ${
-                   formData.recurrenceType === 'weekly' 
-                    ? 'bg-uwjota-primary/10 border-uwjota-primary text-uwjota-primary' 
-                    : 'border-uwjota-border text-uwjota-muted hover:border-uwjota-muted/80'
-                 }`}
-               >
-                 Semanalmente
-               </button>
+               {['once', 'weekly'].map(type => (
+                 <button
+                   key={type}
+                   type="button"
+                   onClick={() => setFormData({...formData, recurrenceType: type as any})}
+                   className={`flex-1 py-2 text-xs uppercase tracking-wider rounded-md border transition-all font-bold ${
+                     formData.recurrenceType === type
+                      ? 'bg-uwjota-primary/10 border-uwjota-primary text-uwjota-primary' 
+                      : 'border-uwjota-border text-uwjota-muted hover:border-uwjota-text'
+                   }`}
+                 >
+                   {type === 'once' ? 'Única' : 'Semanal'}
+                 </button>
+               ))}
             </div>
 
             {formData.recurrenceType === 'weekly' && (
-              <div className="animate-fade-in bg-uwjota-card/50 p-4 rounded-lg border border-uwjota-border">
-                <p className="text-[10px] text-uwjota-muted uppercase mb-3 font-semibold">Selecione os dias</p>
+              <div className="animate-fade-in bg-uwjota-bg p-4 rounded-lg border border-uwjota-border">
+                <p className="text-[10px] text-uwjota-muted uppercase mb-3 font-bold">Dias da semana</p>
                 <div className="flex justify-between">
                   {weekDays.map((day, index) => {
                     const isSelected = formData.recurrenceDays.includes(index);
@@ -310,10 +247,10 @@ const TasksView: React.FC = () => {
                         key={index}
                         type="button"
                         onClick={() => toggleDay(index)}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-200 ${
+                        className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold transition-all duration-200 ${
                           isSelected
-                            ? 'bg-uwjota-primary text-white shadow-lg shadow-uwjota-primary/20'
-                            : 'bg-uwjota-card border border-uwjota-border text-uwjota-muted hover:border-uwjota-primary/50'
+                            ? 'bg-uwjota-primary text-white shadow-[0_0_10px_rgba(139,92,246,0.5)]'
+                            : 'bg-[#0a0a0a] border border-uwjota-border text-uwjota-muted'
                         }`}
                       >
                         {day}
@@ -324,20 +261,20 @@ const TasksView: React.FC = () => {
               </div>
             )}
           </div>
+          
+           <div className="mb-6">
+              <label className="block text-xs font-semibold text-uwjota-text mb-1.5 ml-0.5">Resumo (Opcional)</label>
+              <textarea
+                className="w-full rounded-lg border border-uwjota-border bg-[#0a0a0a] text-uwjota-text placeholder-uwjota-muted/50 focus:border-uwjota-primary focus:ring-1 focus:ring-uwjota-primary/30 outline-none px-3 py-2.5 text-sm resize-none"
+                rows={3}
+                value={formData.description}
+                onChange={e => setFormData({...formData, description: e.target.value})}
+              />
+           </div>
 
-          <div className="mb-6">
-            <label className="block text-xs font-medium text-uwjota-muted mb-2">Resumo (Opcional)</label>
-            <textarea
-              className="w-full rounded-lg border border-uwjota-border bg-uwjota-card/50 text-uwjota-text placeholder-uwjota-muted/40 focus:border-uwjota-primary focus:bg-uwjota-card focus:ring-1 focus:ring-uwjota-primary outline-none px-4 py-2.5 text-sm"
-              rows={3}
-              value={formData.description}
-              onChange={e => setFormData({...formData, description: e.target.value})}
-            />
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6 border-t border-white/5 pt-4">
+          <div className="flex justify-end space-x-3 mt-6 border-t border-uwjota-border pt-4">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-            <Button type="submit">Confirmar</Button>
+            <Button type="submit">Salvar</Button>
           </div>
         </form>
       </Modal>

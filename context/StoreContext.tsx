@@ -1,14 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { AppContextType, AppState, Task, Transaction, Note } from '../types';
 
-// Atualizado para refletir o nome do sistema
 const STORAGE_KEY = 'uwjota_system_v1';
 
 const defaultState: AppState = {
   tasks: [],
   transactions: [],
   notes: [],
-  theme: 'light',
 };
 
 const StoreContext = createContext<AppContextType | undefined>(undefined);
@@ -22,19 +20,22 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         
         // --- DATA INTEGRITY CHECK ---
         const safeState: AppState = {
-          ...defaultState, // Defaults
-          ...parsedState,  // Overwrites
+          ...defaultState,
+          ...parsedState,
+          // Remove theme from imported state if it exists
           notes: Array.isArray(parsedState.notes) ? parsedState.notes : [],
           tasks: Array.isArray(parsedState.tasks) ? parsedState.tasks : [],
           transactions: Array.isArray(parsedState.transactions) ? parsedState.transactions : [],
         };
+        // Remove theme key specifically if it came from old storage
+        if ('theme' in safeState) {
+            delete (safeState as any).theme;
+        }
 
-        // Lógica de Limpeza ao Carregar
-        // Garantimos que tarefas recorrentes nunca fiquem "travadas" como completed: true no estado persistido
-        // se a lógica anterior as salvou incorretamente.
+        // Clean up recurrence tasks logic
         safeState.tasks = safeState.tasks.map((t: Task) => {
           if (t.recurrence && t.recurrence.type !== 'once' && t.completed) {
-            return { ...t, completed: false }; // Força false, confiamos apenas no lastCompletedDate
+            return { ...t, completed: false }; 
           }
           return t;
         });
@@ -47,7 +48,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return defaultState;
   });
 
-  // Effect 1: Persistência de Dados
+  // Effect 1: Persistência
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -56,17 +57,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [state]);
 
-  // Effect 2: Aplicação do Tema
+  // Always force dark mode on mount
   useEffect(() => {
-    if (state.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [state.theme]);
-
-  const setTheme = useCallback((theme: 'light' | 'dark') => {
-    setState(prev => ({ ...prev, theme }));
+    document.documentElement.classList.add('dark');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#030303');
   }, []);
 
   // --- Task Logic ---
@@ -104,18 +98,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const isRecurring = t.recurrence && t.recurrence.type !== 'once';
           
           if (isRecurring) {
-            // Lógica para Recorrentes:
-            // Se já foi completada hoje, "desfazemos" removendo a data (ou setando null/ontem)
-            // Se não foi completada hoje, setamos a data para hoje.
-            // O campo 'completed' boolean fica SEMPRE false para recorrentes no DB.
             const isCompletedToday = t.lastCompletedDate === todayStr;
             return {
               ...t,
-              completed: false, // Sempre false para não bugar o filtro de "pendentes" amanhã
+              completed: false, 
               lastCompletedDate: isCompletedToday ? '' : todayStr
             };
           } else {
-            // Lógica para Tarefas Únicas (Padrão)
             return { 
               ...t, 
               completed: !t.completed,
@@ -173,9 +162,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // --- System Logic ---
   const resetData = useCallback(() => {
     if (window.confirm("ATENÇÃO: Isso apagará todos os dados permanentemente e reiniciará o sistema. Continuar?")) {
-      setState({ ...defaultState, theme: state.theme });
+      setState({ ...defaultState });
     }
-  }, [state.theme]);
+  }, []);
 
   const exportData = useCallback(() => {
     const dataStr = JSON.stringify(state, null, 2);
@@ -202,8 +191,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
         transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
         notes: Array.isArray(parsed.notes) ? parsed.notes : [],
-        theme: parsed.theme === 'dark' || parsed.theme === 'light' ? parsed.theme : 'light',
       };
+      if ('theme' in importedState) { delete (importedState as any).theme; }
+
       setState(importedState);
       return true;
     } catch (e) {
@@ -216,7 +206,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <StoreContext.Provider
       value={{
         ...state,
-        setTheme,
         addTask,
         updateTask,
         deleteTask,

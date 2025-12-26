@@ -24,31 +24,31 @@ const SettingsView: React.FC = () => {
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-thin tracking-wider text-uwjota-text uppercase mb-10 border-b border-uwjota-border pb-6 text-center">Configuração do Sistema</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-uwjota-text uppercase mb-10 border-b border-uwjota-border pb-6 text-center">Sistema</h1>
 
       <Card title="Gerenciamento de Dados">
         <div className="space-y-6">
-          <div className="flex items-center justify-between pb-6 border-b border-uwjota-border/50">
+          <div className="flex items-center justify-between pb-6 border-b border-uwjota-border">
              <div className="flex items-center gap-4">
-               <div className="p-3 bg-uwjota-primary/10 rounded-lg border border-uwjota-primary/20 text-uwjota-primary">
+               <div className="p-2.5 bg-uwjota-bg rounded-lg border border-uwjota-border text-uwjota-primary">
                  <Download size={20} />
                </div>
                <div>
-                 <p className="font-medium text-uwjota-text">Protocolo de Backup</p>
-                 <p className="text-xs text-uwjota-muted">Exportar dados e chave local.</p>
+                 <p className="font-semibold text-uwjota-text text-sm">Backup Local</p>
+                 <p className="text-xs text-uwjota-muted">Baixar arquivo JSON.</p>
                </div>
              </div>
-             <Button variant="secondary" onClick={exportData}>Exportar</Button>
+             <Button variant="secondary" onClick={exportData} size="sm">Exportar</Button>
           </div>
 
-          <div className="flex items-center justify-between pb-6 border-b border-uwjota-border/50">
+          <div className="flex items-center justify-between pb-6 border-b border-uwjota-border">
              <div className="flex items-center gap-4">
-               <div className="p-3 bg-uwjota-primary/10 rounded-lg border border-uwjota-primary/20 text-uwjota-primary">
+               <div className="p-2.5 bg-uwjota-bg rounded-lg border border-uwjota-border text-uwjota-primary">
                  <Upload size={20} />
                </div>
                <div>
-                 <p className="font-medium text-uwjota-text">Ponto de Restauração</p>
-                 <p className="text-xs text-uwjota-muted">Injetar estado anterior do sistema.</p>
+                 <p className="font-semibold text-uwjota-text text-sm">Restaurar Backup</p>
+                 <p className="text-xs text-uwjota-muted">Carregar arquivo JSON.</p>
                </div>
              </div>
              <div>
@@ -59,27 +59,27 @@ const SettingsView: React.FC = () => {
                  className="hidden" 
                  onChange={handleFileChange}
                />
-               <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>Importar</Button>
+               <Button variant="secondary" onClick={() => fileInputRef.current?.click()} size="sm">Importar</Button>
              </div>
           </div>
 
           <div className="flex items-center justify-between pt-2">
              <div className="flex items-center gap-4">
-               <div className="p-3 bg-uwjota-error/10 rounded-lg border border-uwjota-error/20 text-uwjota-error">
+               <div className="p-2.5 bg-rose-950/20 rounded-lg border border-rose-900/50 text-rose-500">
                  <Trash size={20} />
                </div>
                <div>
-                 <p className="font-medium text-uwjota-error">Expurgo do Sistema</p>
-                 <p className="text-xs text-uwjota-muted">Destruição irreversível de dados.</p>
+                 <p className="font-semibold text-rose-400 text-sm">Resetar Sistema</p>
+                 <p className="text-xs text-uwjota-muted">Apagar tudo.</p>
                </div>
              </div>
-             <Button variant="danger" onClick={resetData}>Resetar</Button>
+             <Button variant="danger" onClick={resetData} size="sm">Resetar</Button>
           </div>
         </div>
       </Card>
       
       <div className="text-center mt-20">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-uwjota-muted opacity-50">uwjota v1.2 • Ambiente Local Seguro</p>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-uwjota-muted font-bold opacity-60">uwjota v1.4 • Midnight Secure</p>
       </div>
     </div>
   );

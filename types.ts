@@ -41,11 +41,10 @@ export interface AppState {
   tasks: Task[];
   transactions: Transaction[];
   notes: Note[];
-  theme: 'light' | 'dark';
+  // Removido theme
 }
 
 export interface AppContextType extends AppState {
-  setTheme: (theme: 'light' | 'dark') => void;
   // Task Actions
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'completed'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
