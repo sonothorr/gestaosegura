@@ -47,10 +47,10 @@ const NotesView: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-row justify-between items-center gap-4 border-b border-uwjota-border pb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-uwjota-border pb-6">
         <h1 className="text-2xl font-bold tracking-tight text-uwjota-text uppercase">Anotações</h1>
-        <Button onClick={() => handleOpenModal()} variant="primary">
-          <Plus size={16} className="mr-2" /> <span className="hidden sm:inline">Nova Nota</span><span className="sm:hidden">Nova</span>
+        <Button onClick={() => handleOpenModal()} variant="primary" className="w-full sm:w-auto">
+          <Plus size={16} className="mr-2" /> <span>Nova Nota</span>
         </Button>
       </div>
 
@@ -67,7 +67,7 @@ const NotesView: React.FC = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start pb-20">
         {filteredNotes.length === 0 ? (
           <div className="col-span-full text-center py-20 border-2 border-dashed border-uwjota-border rounded-xl">
              <p className="text-uwjota-muted text-sm font-semibold">Nenhuma nota encontrada</p>
@@ -76,37 +76,40 @@ const NotesView: React.FC = () => {
           filteredNotes.map(note => (
             <div 
               key={note.id} 
-              className={`bg-uwjota-card border rounded-xl p-6 group transition-all duration-300 hover:shadow-md hover:border-uwjota-primary/30 ${note.isPinned ? 'border-uwjota-primary/40 shadow-sm shadow-violet-900/10' : 'border-uwjota-border'}`}
+              className={`bg-uwjota-card border rounded-xl p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-uwjota-primary/30 ${note.isPinned ? 'border-uwjota-primary/40 shadow-sm shadow-violet-900/10' : 'border-uwjota-border'}`}
             >
-              <div className="flex justify-between items-start mb-3">
-                <h3 className={`font-semibold text-lg pr-8 truncate ${note.isPinned ? 'text-uwjota-primary' : 'text-uwjota-text'}`}>
-                   {note.title || <span className="text-uwjota-muted italic">Sem título</span>}
-                </h3>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-6 right-6 bg-uwjota-card pl-2">
-                   <button onClick={() => updateNote(note.id, { isPinned: !note.isPinned })} className={`p-1.5 rounded hover:bg-uwjota-bg ${note.isPinned ? 'text-uwjota-primary' : 'text-uwjota-muted'}`}>
-                     <Pin size={16} fill={note.isPinned ? "currentColor" : "none"} />
+              <div>
+                <div className="flex justify-between items-start mb-4">
+                    <h3 className={`font-semibold text-lg pr-4 break-words ${note.isPinned ? 'text-uwjota-primary' : 'text-uwjota-text'}`}>
+                    {note.title || <span className="text-uwjota-muted italic">Sem título</span>}
+                    </h3>
+                    {note.isPinned && <Pin size={16} className="text-uwjota-primary flex-shrink-0" fill="currentColor" />}
+                </div>
+
+                <div className="prose prose-invert prose-sm max-w-none mb-6">
+                    <p className="text-uwjota-muted whitespace-pre-wrap line-clamp-6 text-sm leading-relaxed break-words">
+                    {note.content}
+                    </p>
+                </div>
+              </div>
+
+              {/* Rodapé com Ações - Sempre Visíveis */}
+              <div className="mt-auto pt-4 border-t border-uwjota-border flex justify-between items-center">
+                 <span className="text-[10px] text-uwjota-muted uppercase tracking-wider font-bold">
+                    {new Date(note.updatedAt).toLocaleDateString('pt-BR')}
+                 </span>
+                 
+                 <div className="flex items-center gap-1">
+                   <button onClick={() => updateNote(note.id, { isPinned: !note.isPinned })} className={`p-2 rounded hover:bg-uwjota-bg transition-colors ${note.isPinned ? 'text-uwjota-primary' : 'text-uwjota-muted'}`} title={note.isPinned ? "Desafixar" : "Fixar"}>
+                     <Pin size={16} />
                    </button>
-                   <button onClick={() => handleOpenModal(note)} className="p-1.5 rounded text-uwjota-muted hover:text-uwjota-text hover:bg-uwjota-bg">
+                   <button onClick={() => handleOpenModal(note)} className="p-2 rounded text-uwjota-muted hover:text-uwjota-text hover:bg-uwjota-bg transition-colors" title="Editar">
                      <Edit2 size={16} />
                    </button>
-                   <button onClick={() => deleteNote(note.id)} className="p-1.5 rounded text-uwjota-muted hover:text-rose-500 hover:bg-rose-500/10">
+                   <button onClick={() => deleteNote(note.id)} className="p-2 rounded text-uwjota-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors" title="Excluir">
                      <Trash2 size={16} />
                    </button>
-                </div>
-                <div className="md:hidden">
-                   {note.isPinned && <Pin size={14} className="text-uwjota-primary" fill="currentColor" />}
-                </div>
-              </div>
-
-              <div className="prose prose-invert prose-sm max-w-none">
-                <p className="text-uwjota-muted whitespace-pre-wrap line-clamp-6 text-sm leading-relaxed">
-                  {note.content}
-                </p>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-uwjota-border flex justify-between items-center text-[10px] text-uwjota-muted uppercase tracking-wider font-bold">
-                 <span>{new Date(note.updatedAt).toLocaleDateString('pt-BR')}</span>
-                 {note.isPinned && <span className="text-uwjota-primary">Fixado</span>}
+                 </div>
               </div>
             </div>
           ))

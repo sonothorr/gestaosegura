@@ -130,39 +130,32 @@ const DashboardView: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <header className="mb-6 flex items-end justify-between border-b border-uwjota-border pb-4">
-        <div>
-            <h1 className="text-2xl font-bold tracking-tight text-uwjota-text">Visão Geral</h1>
-            <p className="text-sm text-uwjota-muted mt-1">Resumo das atividades de hoje.</p>
-        </div>
-        <div className="flex items-center bg-uwjota-card px-3 py-1.5 rounded-full border border-uwjota-border shadow-sm">
-          <Diamond className="text-uwjota-primary mr-2" size={14} fill="currentColor" fillOpacity={0.2} />
-          <span className="text-xs font-bold tracking-wider text-uwjota-text uppercase">uwjota</span>
+      <header className="mb-8 flex justify-center items-center border-b border-uwjota-border pb-6 pt-2">
+        <div className="flex items-center bg-uwjota-card px-5 py-2 rounded-full border border-uwjota-border shadow-[0_0_15px_rgba(0,0,0,0.3)]">
+          <Diamond className="text-uwjota-primary mr-2.5" size={16} fill="currentColor" fillOpacity={0.2} />
+          <span className="text-sm font-bold tracking-[0.2em] text-uwjota-text uppercase">uwjota</span>
         </div>
       </header>
 
       {/* --- QUICK ACTIONS SECTION --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-3 md:gap-4 mb-8">
         {[
-          { icon: CheckSquare, label: 'Nova Tarefa', sub: 'Ação Rápida', color: 'text-violet-400', bg: 'bg-violet-900/20', action: () => setModals(p => ({...p, task: true})) },
-          { icon: Wallet, label: 'Lançamento', sub: 'Financeiro', color: 'text-emerald-400', bg: 'bg-emerald-900/20', action: () => setModals(p => ({...p, finance: true})) },
-          { icon: StickyNote, label: 'Anotação', sub: 'Lembrete', color: 'text-fuchsia-400', bg: 'bg-fuchsia-900/20', action: () => setModals(p => ({...p, note: true})) },
+          { icon: CheckSquare, label: 'Tarefa', sub: 'Nova', color: 'text-violet-400', bg: 'bg-violet-900/20', action: () => setModals(p => ({...p, task: true})) },
+          { icon: Wallet, label: 'Finanças', sub: 'Lançar', color: 'text-emerald-400', bg: 'bg-emerald-900/20', action: () => setModals(p => ({...p, finance: true})) },
+          { icon: StickyNote, label: 'Nota', sub: 'Criar', color: 'text-fuchsia-400', bg: 'bg-fuchsia-900/20', action: () => setModals(p => ({...p, note: true})) },
         ].map((btn, i) => (
           <button 
             key={i}
             onClick={btn.action}
-            className="group relative flex items-center justify-between p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/40 hover:shadow-[0_0_15px_rgba(139,92,246,0.1)] transition-all duration-300"
+            className="group relative flex flex-col items-center justify-center p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/40 hover:shadow-[0_0_15px_rgba(139,92,246,0.1)] transition-all duration-300 active:scale-95"
           >
-            <div className="flex items-center gap-4">
-              <div className={`p-2.5 rounded-lg ${btn.bg} ${btn.color} group-hover:scale-110 transition-transform`}>
-                <btn.icon size={20} />
-              </div>
-              <div className="text-left">
-                <span className="block text-sm font-semibold text-uwjota-text">{btn.label}</span>
-                <span className="text-[10px] text-uwjota-muted uppercase tracking-wider font-medium">{btn.sub}</span>
-              </div>
+            <div className={`p-3 rounded-xl mb-3 ${btn.bg} ${btn.color} group-hover:scale-110 transition-transform shadow-inner`}>
+              <btn.icon size={22} />
             </div>
-            <Plus size={16} className="text-uwjota-border group-hover:text-uwjota-primary transition-colors" />
+            <div className="text-center">
+              <span className="block text-xs sm:text-sm font-semibold text-uwjota-text tracking-tight">{btn.label}</span>
+              <span className="hidden sm:block text-[10px] text-uwjota-muted uppercase tracking-wider font-medium mt-1">{btn.sub}</span>
+            </div>
           </button>
         ))}
       </div>

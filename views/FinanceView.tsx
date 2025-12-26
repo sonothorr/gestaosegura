@@ -52,9 +52,10 @@ const FinanceView: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center border-b border-uwjota-border pb-6">
+      {/* Header Updated to match NotesView Style (Mobile: Stacked & Full Width Button) */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-uwjota-border pb-6">
         <h1 className="text-2xl font-bold tracking-tight text-uwjota-text uppercase">Financeiro</h1>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">
           <Plus size={16} className="mr-2" /> Registrar
         </Button>
       </div>

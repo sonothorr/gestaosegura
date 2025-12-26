@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Card, Button, Input, Select, Modal, Badge } from '../components/UI';
+import { Button, Input, Select, Modal, Badge } from '../components/UI';
 import { Plus, CheckCircle2, Circle, Trash2, Edit2, Repeat } from 'lucide-react';
 import { Task, Priority } from '../types';
 
@@ -10,7 +10,6 @@ const TasksView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // ... (keep existing state and logic) ...
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -122,32 +121,34 @@ const TasksView: React.FC = () => {
   const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-row justify-between items-start gap-4 border-b border-uwjota-border pb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-uwjota-text uppercase">Operações</h1>
-          <div className="flex space-x-4 mt-4 bg-uwjota-bg p-1 rounded-lg w-fit">
-            {(['today', 'week', 'all'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${
-                  filter === f 
-                    ? 'bg-uwjota-card text-uwjota-primary shadow-sm border border-uwjota-primary/20' 
-                    : 'text-uwjota-muted hover:text-uwjota-text'
-                }`}
-              >
-                {{today:'Hoje', week:'Semana', all:'Todas'}[f]}
-              </button>
-            ))}
-          </div>
+    <div className="space-y-8 w-full max-w-full overflow-x-hidden">
+      {/* Header Updated to match NotesView Style (Mobile: Stacked & Full Width Button) */}
+      <div className="border-b border-uwjota-border pb-6 space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+           <h1 className="text-2xl font-bold tracking-tight text-uwjota-text uppercase">Operações</h1>
+           <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
+             <Plus size={16} className="mr-2" /> Nova Tarefa
+           </Button>
         </div>
-        <Button onClick={() => handleOpenModal()} variant="primary">
-          <Plus size={16} className="mr-2" /> <span className="hidden sm:inline">Nova Tarefa</span><span className="sm:hidden">Nova</span>
-        </Button>
+        
+        <div className="flex space-x-2 bg-uwjota-bg p-1 rounded-lg w-full sm:w-fit overflow-x-auto no-scrollbar">
+          {(['today', 'week', 'all'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all whitespace-nowrap ${
+                filter === f 
+                  ? 'bg-uwjota-card text-uwjota-primary shadow-sm border border-uwjota-primary/20' 
+                  : 'text-uwjota-muted hover:text-uwjota-text'
+              }`}
+            >
+              {{today:'Hoje', week:'Semana', all:'Todas'}[f]}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid gap-3">
+      <div className="grid gap-3 w-full">
         {filteredTasks.length === 0 ? (
           <div className="text-center py-20 bg-uwjota-card/30 rounded-xl border-dashed border-2 border-uwjota-border">
             <h3 className="text-lg font-medium text-uwjota-text tracking-wide">Nenhuma operação listada</h3>
@@ -159,44 +160,49 @@ const TasksView: React.FC = () => {
             return (
               <div 
                 key={task.id} 
-                className={`group flex items-center p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/40 transition-all ${
+                className={`group flex flex-col sm:flex-row sm:items-center p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/40 transition-all ${
                   isCompleted ? 'opacity-60 bg-uwjota-bg' : ''
                 }`}
               >
-                <button 
-                  onClick={() => toggleTaskCompletion(task.id)}
-                  className={`flex-shrink-0 mr-4 transition-colors ${
-                    isCompleted ? 'text-uwjota-success' : 'text-uwjota-muted hover:text-uwjota-primary'
-                  }`}
-                >
-                  {isCompleted ? <CheckCircle2 size={24} className="fill-uwjota-success/10" /> : <Circle size={24} />}
-                </button>
-                
-                <div className="flex-grow min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h4 className={`text-sm font-semibold tracking-tight truncate ${isCompleted ? 'line-through text-uwjota-muted' : 'text-uwjota-text'}`}>
-                      {task.title}
-                    </h4>
-                    <Badge color={task.priority === 'high' ? 'red' : 'yellow'}>
-                      {{low:'Baixa', medium:'Média', high:'Alta'}[task.priority]}
-                    </Badge>
-                    {task.recurrence?.type === 'weekly' && (
-                      <Badge color="violet">
-                         <Repeat size={10} className="mr-1" /> Recorrente
-                      </Badge>
-                    )}
-                  </div>
-                  {task.description && (
-                    <p className="text-xs text-uwjota-muted truncate">{task.description}</p>
-                  )}
+                <div className="flex items-start sm:items-center flex-grow min-w-0 mb-3 sm:mb-0">
+                    <button 
+                      onClick={() => toggleTaskCompletion(task.id)}
+                      className={`flex-shrink-0 mr-4 mt-1 sm:mt-0 transition-colors ${
+                        isCompleted ? 'text-uwjota-success' : 'text-uwjota-muted hover:text-uwjota-primary'
+                      }`}
+                    >
+                      {isCompleted ? <CheckCircle2 size={24} className="fill-uwjota-success/10" /> : <Circle size={24} />}
+                    </button>
+                    
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h4 className={`text-sm font-semibold tracking-tight truncate max-w-full ${isCompleted ? 'line-through text-uwjota-muted' : 'text-uwjota-text'}`}>
+                          {task.title}
+                        </h4>
+                        <div className="flex gap-1 shrink-0">
+                            <Badge color={task.priority === 'high' ? 'red' : 'yellow'}>
+                              {{low:'Baixa', medium:'Média', high:'Alta'}[task.priority]}
+                            </Badge>
+                            {task.recurrence?.type === 'weekly' && (
+                              <Badge color="violet">
+                                <Repeat size={10} className="mr-1" /> Semanal
+                              </Badge>
+                            )}
+                        </div>
+                      </div>
+                      {task.description && (
+                        <p className="text-xs text-uwjota-muted truncate max-w-[80vw] sm:max-w-md">{task.description}</p>
+                      )}
+                    </div>
                 </div>
 
-                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
-                  <button onClick={() => handleOpenModal(task)} className="p-2 text-uwjota-muted hover:text-uwjota-text rounded-md hover:bg-uwjota-bg">
-                    <Edit2 size={16} />
+                {/* Ações sempre visíveis em mobile e desktop para consistência */}
+                <div className="flex items-center justify-end space-x-1 sm:ml-4 border-t sm:border-t-0 border-uwjota-border pt-2 sm:pt-0 mt-1 sm:mt-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => handleOpenModal(task)} className="p-2 text-uwjota-muted hover:text-uwjota-text rounded-md hover:bg-uwjota-bg flex items-center text-xs sm:text-base">
+                    <Edit2 size={16} className="mr-2 sm:mr-0" /> <span className="sm:hidden">Editar</span>
                   </button>
-                  <button onClick={() => deleteTask(task.id)} className="p-2 text-uwjota-muted hover:text-rose-500 rounded-md hover:bg-rose-500/10">
-                    <Trash2 size={16} />
+                  <button onClick={() => deleteTask(task.id)} className="p-2 text-uwjota-muted hover:text-rose-500 rounded-md hover:bg-rose-500/10 flex items-center text-xs sm:text-base">
+                    <Trash2 size={16} className="mr-2 sm:mr-0" /> <span className="sm:hidden">Excluir</span>
                   </button>
                 </div>
               </div>
@@ -272,10 +278,9 @@ const TasksView: React.FC = () => {
               />
            </div>
 
-          <div className="flex justify-end space-x-3 mt-6 border-t border-uwjota-border pt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-            <Button type="submit">Salvar</Button>
-          </div>
+           <div className="flex justify-end pt-4 mt-6 border-t border-uwjota-border">
+             <Button type="submit">Salvar</Button>
+           </div>
         </form>
       </Modal>
     </div>
