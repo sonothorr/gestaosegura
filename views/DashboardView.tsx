@@ -101,9 +101,6 @@ const DashboardView: React.FC = () => {
      }).length;
   }, [tasks, todayStr]);
 
-  const totalTasksForTodayCount = pendingTasksToday.length + completedTodayCount;
-  const performancePercentage = totalTasksForTodayCount === 0 ? 0 : Math.round((completedTodayCount / totalTasksForTodayCount) * 100);
-
   const financials = useMemo(() => {
     let income = 0;
     let expense = 0;
@@ -129,7 +126,7 @@ const DashboardView: React.FC = () => {
   const priorityLabels = { low: 'Baixa', medium: 'Média', high: 'Alta' };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <header className="mb-8 flex justify-center items-center border-b border-uwjota-border pb-6 pt-2">
         <div className="flex items-center bg-uwjota-card px-5 py-2 rounded-full border border-uwjota-border shadow-[0_0_15px_rgba(0,0,0,0.3)]">
           <Diamond className="text-uwjota-primary mr-2.5" size={16} fill="currentColor" fillOpacity={0.2} />
@@ -137,105 +134,71 @@ const DashboardView: React.FC = () => {
         </div>
       </header>
 
-      {/* --- QUICK ACTIONS SECTION --- */}
-      <div className="grid grid-cols-3 gap-3 md:gap-4 mb-8">
-        {[
-          { icon: CheckSquare, label: 'Tarefa', sub: 'Nova', color: 'text-violet-400', bg: 'bg-violet-900/20', action: () => setModals(p => ({...p, task: true})) },
-          { icon: Wallet, label: 'Finanças', sub: 'Lançar', color: 'text-emerald-400', bg: 'bg-emerald-900/20', action: () => setModals(p => ({...p, finance: true})) },
-          { icon: StickyNote, label: 'Nota', sub: 'Criar', color: 'text-fuchsia-400', bg: 'bg-fuchsia-900/20', action: () => setModals(p => ({...p, note: true})) },
-        ].map((btn, i) => (
-          <button 
-            key={i}
-            onClick={btn.action}
-            className="group relative flex flex-col items-center justify-center p-4 bg-uwjota-card border border-uwjota-border rounded-xl hover:border-uwjota-primary/40 hover:shadow-[0_0_15px_rgba(139,92,246,0.1)] transition-all duration-300 active:scale-95"
-          >
-            <div className={`p-3 rounded-xl mb-3 ${btn.bg} ${btn.color} group-hover:scale-110 transition-transform shadow-inner`}>
-              <btn.icon size={22} />
-            </div>
-            <div className="text-center">
-              <span className="block text-xs sm:text-sm font-semibold text-uwjota-text tracking-tight">{btn.label}</span>
-              <span className="hidden sm:block text-[10px] text-uwjota-muted uppercase tracking-wider font-medium mt-1">{btn.sub}</span>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* KPI Cards (Top Row) - Now only 2 columns */}
+      <div className="grid grid-cols-2 gap-4">
         {/* Task KPI */}
-        <Card className="relative overflow-hidden">
+        <Card className="relative overflow-visible">
           <div className="flex flex-col h-full justify-between relative z-10">
             <div>
-              <p className="text-uwjota-muted text-xs font-bold uppercase tracking-wider">Tarefas Pendentes</p>
-              <h3 className="text-4xl font-mono font-medium text-uwjota-text mt-2">{pendingTasksToday.length}</h3>
+              <p className="text-uwjota-muted text-[10px] sm:text-xs font-bold uppercase tracking-wider">Pendentes</p>
+              <h3 className="text-2xl sm:text-4xl font-mono font-medium text-uwjota-text mt-2">{pendingTasksToday.length}</h3>
             </div>
-            <div className="mt-6 flex items-center text-xs text-uwjota-primary bg-uwjota-primary/10 px-3 py-1.5 rounded-md w-fit font-semibold border border-uwjota-primary/20">
-               <Calendar size={12} className="mr-2" /> 
-               {completedTodayCount} concluídas hoje
+            <div className="mt-4">
+               <div className="flex items-center text-[10px] sm:text-xs text-uwjota-primary bg-uwjota-primary/10 px-2 sm:px-3 py-1.5 rounded-md w-fit font-semibold border border-uwjota-primary/20 mb-3">
+                  <Calendar size={12} className="mr-2" /> 
+                  {completedTodayCount} hoje
+               </div>
+               <Button 
+                  onClick={() => setModals(p => ({...p, task: true}))} 
+                  variant="secondary" 
+                  size="sm" 
+                  className="w-full text-xs h-8"
+                >
+                  <Plus size={12} className="mr-1.5" /> Adicionar
+               </Button>
             </div>
           </div>
         </Card>
 
         {/* Finance KPI */}
-        <Card className="relative overflow-hidden">
+        <Card className="relative overflow-visible">
           <div className="flex flex-col h-full justify-between relative z-10">
             <div>
-              <p className="text-uwjota-muted text-xs font-bold uppercase tracking-wider">Saldo Atual</p>
-              <h3 className={`text-3xl font-mono font-medium mt-2 tracking-tight ${financials.balance >= 0 ? 'text-uwjota-text' : 'text-uwjota-error'}`}>
+              <p className="text-uwjota-muted text-[10px] sm:text-xs font-bold uppercase tracking-wider">Saldo</p>
+              <h3 className={`text-xl sm:text-3xl font-mono font-medium mt-2 tracking-tight truncate ${financials.balance >= 0 ? 'text-uwjota-text' : 'text-uwjota-error'}`}>
                 {formatBRL(financials.balance)}
               </h3>
             </div>
-            <div className="mt-6 flex space-x-3 text-xs font-mono">
-              <span className="flex items-center text-emerald-400 bg-emerald-950/30 border border-emerald-900 px-2 py-1 rounded">
-                <TrendingUp size={12} className="mr-1" /> {formatBRL(financials.income)}
-              </span>
-              <span className="flex items-center text-rose-400 bg-rose-950/30 border border-rose-900 px-2 py-1 rounded">
-                <TrendingDown size={12} className="mr-1" /> {formatBRL(financials.expense)}
-              </span>
+            <div className="mt-4">
+              <div className="flex flex-wrap gap-2 text-[10px] sm:text-xs font-mono mb-3">
+                <span className="flex items-center text-emerald-400 bg-emerald-950/30 border border-emerald-900 px-2 py-1 rounded">
+                  <TrendingUp size={10} className="mr-1" /> {formatBRL(financials.income).replace('R$', '').trim()}
+                </span>
+                <span className="flex items-center text-rose-400 bg-rose-950/30 border border-rose-900 px-2 py-1 rounded">
+                  <TrendingDown size={10} className="mr-1" /> {formatBRL(financials.expense).replace('R$', '').trim()}
+                </span>
+              </div>
+              <Button 
+                  onClick={() => setModals(p => ({...p, finance: true}))} 
+                  variant="secondary" 
+                  size="sm" 
+                  className="w-full text-xs h-8"
+                >
+                  <Plus size={12} className="mr-1.5" /> Adicionar
+              </Button>
             </div>
           </div>
         </Card>
-
-        {/* Chart KPI */}
-        <Card>
-           <p className="text-uwjota-muted text-xs font-bold uppercase tracking-wider mb-4">Fluxo de Caixa</p>
-           <div className="h-28">
-             {chartData.length > 0 ? (
-               <ResponsiveContainer width="100%" height="100%">
-                 <AreaChart data={chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorIncomeDash" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorExpenseDash" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px', color: '#f3f4f6', fontSize: '10px' }}
-                      itemStyle={{color: '#f3f4f6'}}
-                      formatter={(value: number, name: string) => [formatBRL(value), name === 'income' ? 'Rec.' : 'Desp.']}
-                      labelFormatter={() => ''}
-                    />
-                    <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorIncomeDash)" />
-                    <Area type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorExpenseDash)" />
-                 </AreaChart>
-               </ResponsiveContainer>
-             ) : (
-               <div className="h-full flex items-center justify-center text-xs text-uwjota-muted italic">Sem dados suficientes</div>
-             )}
-           </div>
-        </Card>
       </div>
 
+      {/* Main Content Grid - Priority List FIRST, Chart SECOND */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Today's Tasks */}
-        <Card title="Fila de Prioridade">
+        
+        {/* 1. Priority Queue (Top on Mobile) */}
+        <Card title="Fila de Prioridade" className="min-h-[300px]">
           {pendingTasksToday.length === 0 ? (
-            <div className="text-center py-10">
-              <div className="w-16 h-16 bg-uwjota-bg border border-uwjota-border rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center py-10 flex flex-col items-center justify-center h-full">
+              <div className="w-16 h-16 bg-uwjota-bg border border-uwjota-border rounded-full flex items-center justify-center mb-4">
                 <CheckSquare size={24} className="text-uwjota-primary opacity-50" />
               </div>
               <p className="text-sm text-uwjota-muted font-medium">Todos objetivos concluídos</p>
@@ -274,37 +237,37 @@ const DashboardView: React.FC = () => {
           )}
         </Card>
 
-        {/* Productivity */}
-        <Card title="Performance">
-             <div className="flex flex-col h-full justify-between">
-                <div className="py-4">
-                   <div className="flex justify-between items-end mb-4">
-                     <p className="text-uwjota-muted text-xs font-bold uppercase tracking-wider">Conclusão Diária</p>
-                     <span className="text-3xl font-mono text-uwjota-text font-medium">
-                       {performancePercentage}<span className="text-lg text-uwjota-muted">%</span>
-                     </span>
-                   </div>
-                   
-                   {/* Clean Progress Bar */}
-                   <div className="w-full bg-uwjota-bg h-3 rounded-full overflow-hidden border border-uwjota-border/50">
-                      <div 
-                        className="h-full rounded-full relative overflow-hidden transition-all duration-1000 ease-out bg-uwjota-primary shadow-[0_0_15px_rgba(139,92,246,0.5)]" 
-                        style={{ width: `${performancePercentage}%` }}
-                      >
-                      </div>
-                   </div>
-
-                   <p className="text-[10px] text-uwjota-muted mt-3 text-right font-mono">
-                     {completedTodayCount} / {totalTasksForTodayCount} TARGETS
-                   </p>
-                </div>
-                
-                <div className="bg-uwjota-bg border border-uwjota-border p-5 rounded-lg mt-4">
-                    <p className="text-sm text-uwjota-muted italic font-medium leading-relaxed pb-1">
-                      "A consistência é a chave do sucesso."
-                    </p>
-                </div>
-             </div>
+        {/* 2. Chart (Bottom on Mobile) */}
+        <Card className="relative overflow-visible">
+           <p className="text-uwjota-muted text-xs font-bold uppercase tracking-wider mb-4">Fluxo de Caixa</p>
+           <div className="h-64 sm:h-72">
+             {chartData.length > 0 ? (
+               <ResponsiveContainer width="100%" height="100%">
+                 <AreaChart data={chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorIncomeDash" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorExpenseDash" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px', color: '#f3f4f6', fontSize: '10px' }}
+                      itemStyle={{color: '#f3f4f6'}}
+                      formatter={(value: number, name: string) => [formatBRL(value), name === 'income' ? 'Rec.' : 'Desp.']}
+                      labelFormatter={() => ''}
+                    />
+                    <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorIncomeDash)" />
+                    <Area type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorExpenseDash)" />
+                 </AreaChart>
+               </ResponsiveContainer>
+             ) : (
+               <div className="h-full flex items-center justify-center text-xs text-uwjota-muted italic">Sem dados suficientes</div>
+             )}
+           </div>
         </Card>
       </div>
 

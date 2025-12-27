@@ -164,7 +164,7 @@ const TasksView: React.FC = () => {
                   isCompleted ? 'opacity-60 bg-uwjota-bg' : ''
                 }`}
               >
-                <div className="flex items-start sm:items-center flex-grow min-w-0 mb-3 sm:mb-0">
+                <div className="flex items-start sm:items-center flex-grow min-w-0 mb-3 sm:mb-0 max-w-full">
                     <button 
                       onClick={() => toggleTaskCompletion(task.id)}
                       className={`flex-shrink-0 mr-4 mt-1 sm:mt-0 transition-colors ${
@@ -174,11 +174,15 @@ const TasksView: React.FC = () => {
                       {isCompleted ? <CheckCircle2 size={24} className="fill-uwjota-success/10" /> : <Circle size={24} />}
                     </button>
                     
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <h4 className={`text-sm font-semibold tracking-tight truncate max-w-full ${isCompleted ? 'line-through text-uwjota-muted' : 'text-uwjota-text'}`}>
+                    {/* Container de texto principal com overflow hidden */}
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <div className="flex items-center gap-2 mb-1 w-full">
+                        {/* Title: flex-1 força o título a ocupar o espaço e truncar quando necessário, empurrando os badges para a direita dentro do limite */}
+                        <h4 className={`text-sm font-semibold tracking-tight truncate flex-1 ${isCompleted ? 'line-through text-uwjota-muted' : 'text-uwjota-text'}`}>
                           {task.title}
                         </h4>
+                        
+                        {/* Badges: shrink-0 garante que nunca diminuam */}
                         <div className="flex gap-1 shrink-0">
                             <Badge color={task.priority === 'high' ? 'red' : 'yellow'}>
                               {{low:'Baixa', medium:'Média', high:'Alta'}[task.priority]}
@@ -190,14 +194,15 @@ const TasksView: React.FC = () => {
                             )}
                         </div>
                       </div>
+                      
                       {task.description && (
-                        <p className="text-xs text-uwjota-muted truncate max-w-[80vw] sm:max-w-md">{task.description}</p>
+                        <p className="text-xs text-uwjota-muted truncate pr-2">{task.description}</p>
                       )}
                     </div>
                 </div>
 
-                {/* Ações sempre visíveis em mobile e desktop para consistência */}
-                <div className="flex items-center justify-end space-x-1 sm:ml-4 border-t sm:border-t-0 border-uwjota-border pt-2 sm:pt-0 mt-1 sm:mt-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                {/* Ações */}
+                <div className="flex items-center justify-end space-x-1 sm:ml-4 border-t sm:border-t-0 border-uwjota-border pt-2 sm:pt-0 mt-1 sm:mt-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
                   <button onClick={() => handleOpenModal(task)} className="p-2 text-uwjota-muted hover:text-uwjota-text rounded-md hover:bg-uwjota-bg flex items-center text-xs sm:text-base">
                     <Edit2 size={16} className="mr-2 sm:mr-0" /> <span className="sm:hidden">Editar</span>
                   </button>

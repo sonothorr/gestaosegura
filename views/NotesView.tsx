@@ -80,10 +80,11 @@ const NotesView: React.FC = () => {
             >
               <div>
                 <div className="flex justify-between items-start mb-4">
-                    <h3 className={`font-semibold text-lg pr-4 break-words ${note.isPinned ? 'text-uwjota-primary' : 'text-uwjota-text'}`}>
+                    {/* Título com truncate para não quebrar linha */}
+                    <h3 className={`font-semibold text-lg pr-4 truncate w-full ${note.isPinned ? 'text-uwjota-primary' : 'text-uwjota-text'}`}>
                     {note.title || <span className="text-uwjota-muted italic">Sem título</span>}
                     </h3>
-                    {note.isPinned && <Pin size={16} className="text-uwjota-primary flex-shrink-0" fill="currentColor" />}
+                    {note.isPinned && <Pin size={16} className="text-uwjota-primary flex-shrink-0 ml-2" fill="currentColor" />}
                 </div>
 
                 <div className="prose prose-invert prose-sm max-w-none mb-6">
